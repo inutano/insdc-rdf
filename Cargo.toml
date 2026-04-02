@@ -1,0 +1,21 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[package]
+name = "insdc-rdf"
+version = "0.1.0"
+edition = "2021"
+description = "Convert INSDC sequence archive metadata to RDF (BioSample, SRA, BioProject)"
+
+[[bin]]
+name = "insdc-rdf"
+path = "src/main.rs"
+
+[dependencies]
+insdc-rdf-core = { path = "crates/core" }
+insdc-rdf-biosample = { path = "crates/biosample" }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+md-5 = "0.10"
+flate2 = "1"
