@@ -149,9 +149,11 @@ Full NCBI dumps (2026-04-01/02):
 |--------|-------|---------|---------|--------|------|------------|
 | BioSample | 4.0 GB (gzip) | 53,342,722 | 0 | 785 GB | 55 min | 16.2k rec/s |
 | SRA | 30 GB (TSV) | 129,100,540 | 0 | 284 GB | 29 min | 74k rec/s |
-| BioProject | 3.7 GB (XML) | TBD | — | — | — | — |
+| BioProject | 3.7 GB (XML) | 823,572 | 1 | 1.3 GB | 20 sec | 41k rec/s |
 
-Hardware: Intel Xeon w5-3435X, 128 GB RAM, NVMe/HDD storage.
+Local workstation: Intel Xeon w5-3435X, 128 GB RAM, NVMe/HDD storage.
+
+NIG supercomputer (EPYC 9654, Lustre): ~0.72x local throughput for BioSample (Lustre I/O bound).
 
 ## Project structure
 
