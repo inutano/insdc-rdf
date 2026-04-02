@@ -1,0 +1,72 @@
+- SRARun insdc_sra:DRR000001:
+  - a: dra_ont:Run
+  - dct:identifier:
+    - run_id: "DRR000001"
+  - dct:issued?:
+    - run_published: 2010-03-24T03:10:22Z
+  - dct:modified?:
+    - run_modified: 2022-09-23T10:09:59Z
+  - rdfs:seeAlso?:
+    - run_experiment: SRAExperiment
+  - rdfs:seeAlso?:
+    - run_sample: SRASample
+  - rdfs:seeAlso?:
+    - run_study: SRAStudy
+  - rdfs:seeAlso?:
+    - run_biosample: BioSample
+  - rdfs:seeAlso?:
+    - run_bioproject: BioProject
+
+- SRAExperiment insdc_sra:DRX000001:
+  - a: dra_ont:Experiment
+  - dct:identifier:
+    - experiment_id: "DRX000001"
+  - dct:issued?:
+    - experiment_published: 2010-03-24T03:10:22Z
+  - dct:modified?:
+    - experiment_modified: 2015-01-30T13:21:34Z
+  - rdfs:seeAlso?:
+    - experiment_sample: SRASample
+  - rdfs:seeAlso?:
+    - experiment_study: SRAStudy
+  - rdfs:seeAlso?:
+    - experiment_biosample: BioSample
+  - rdfs:seeAlso?:
+    - experiment_bioproject: BioProject
+
+- SRASample insdc_sra:DRS000001:
+  - a: dra_ont:Sample
+  - dct:identifier:
+    - sample_id: "DRS000001"
+  - dct:issued?:
+    - sample_published: 2010-03-24T03:10:22Z
+  - dct:modified?:
+    - sample_modified: 2025-03-05T04:11:46Z
+  - rdfs:seeAlso?:
+    - sample_biosample: BioSample
+
+- SRAStudy insdc_sra:DRP000001:
+  - a: dra_ont:Study
+  - dct:identifier:
+    - study_id: "DRP000001"
+  - dct:issued?:
+    - study_published: 2015-07-31T15:20:44Z
+  - dct:modified?:
+    - study_modified: 2020-08-25T15:30:25Z
+  - rdfs:seeAlso?:
+    - study_bioproject: BioProject
+
+- SRASubmission insdc_sra:DRA000001:
+  - a: dra_ont:Submission
+  - dct:identifier:
+    - submission_id: "DRA000001"
+  - dct:issued?:
+    - submission_published: 2010-03-24T03:10:22Z
+  - dct:modified?:
+    - submission_modified: 2025-03-05T04:11:46Z
+
+- BioSample idorg_biosample:SAMD00016353:
+  - a: biosample_ont:BioSampleRecord
+
+- BioProject idorg_bioproject:PRJDA38027:
+  - a: bioproject_ont:BioProjectRecord

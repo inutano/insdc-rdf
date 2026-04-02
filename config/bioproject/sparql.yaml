@@ -1,0 +1,3 @@
+bioproject_metadata:
+  description: Get BioProject metadata
+  variables: [BioProject, bioproject_id, title, label, release_date, submission_date]

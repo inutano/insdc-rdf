@@ -1,0 +1,7 @@
+run_links:
+  description: Get cross-links for a run accession
+  variables: [SRARun, run_experiment, run_sample, run_study, run_biosample, run_bioproject]
+
+experiment_links:
+  description: Get cross-links for an experiment accession
+  variables: [SRAExperiment, experiment_sample, experiment_study, experiment_biosample, experiment_bioproject]

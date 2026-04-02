@@ -1,0 +1,57 @@
+PREFIX insdc_sra: <http://identifiers.org/insdc.sra/>
+PREFIX idorg_biosample: <http://identifiers.org/biosample/>
+PREFIX idorg_bioproject: <http://identifiers.org/bioproject/>
+PREFIX dra_ont: <http://ddbj.nig.ac.jp/ontologies/dra/>
+PREFIX biosample_ont: <http://ddbj.nig.ac.jp/ontologies/biosample/>
+PREFIX bioproject_ont: <http://ddbj.nig.ac.jp/ontologies/bioproject/>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+<SRARunShape> {
+  a [ dra_ont:Run ] ;
+  dct:identifier xsd:string ;
+  dct:issued xsd:time ? ;
+  dct:modified xsd:time ? ;
+  rdfs:seeAlso @<SRAExperimentShape> ? ;
+  rdfs:seeAlso @<SRASampleShape> ? ;
+  rdfs:seeAlso @<SRAStudyShape> ? ;
+  rdfs:seeAlso @<BioSampleShape> ? ;
+  rdfs:seeAlso @<BioProjectShape> ?
+}
+<SRAExperimentShape> {
+  a [ dra_ont:Experiment ] ;
+  dct:identifier xsd:string ;
+  dct:issued xsd:time ? ;
+  dct:modified xsd:time ? ;
+  rdfs:seeAlso @<SRASampleShape> ? ;
+  rdfs:seeAlso @<SRAStudyShape> ? ;
+  rdfs:seeAlso @<BioSampleShape> ? ;
+  rdfs:seeAlso @<BioProjectShape> ?
+}
+<SRASampleShape> {
+  a [ dra_ont:Sample ] ;
+  dct:identifier xsd:string ;
+  dct:issued xsd:time ? ;
+  dct:modified xsd:time ? ;
+  rdfs:seeAlso @<BioSampleShape> ?
+}
+<SRAStudyShape> {
+  a [ dra_ont:Study ] ;
+  dct:identifier xsd:string ;
+  dct:issued xsd:time ? ;
+  dct:modified xsd:time ? ;
+  rdfs:seeAlso @<BioProjectShape> ?
+}
+<SRASubmissionShape> {
+  a [ dra_ont:Submission ] ;
+  dct:identifier xsd:string ;
+  dct:issued xsd:time ? ;
+  dct:modified xsd:time ?
+}
+<BioSampleShape> {
+  a [ biosample_ont:BioSampleRecord ]
+}
+<BioProjectShape> {
+  a [ bioproject_ont:BioProjectRecord ]
+}

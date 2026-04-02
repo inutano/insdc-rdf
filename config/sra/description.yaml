@@ -1,0 +1,3 @@
+dataset:
+  name: SRA Accession Cross-Links RDF
+  description: Cross-reference links between SRA, BioSample, and BioProject accessions

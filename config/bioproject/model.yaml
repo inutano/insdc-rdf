@@ -1,0 +1,12 @@
+- BioProject idorg_bioproject:PRJNA3:
+  - a: bioproject_ont:BioProjectRecord
+  - dct:identifier:
+    - bioproject_id: "PRJNA3"
+  - dct:description?:
+    - title: "Causes Lyme disease"
+  - rdfs:label?:
+    - label: "Borreliella burgdorferi B31"
+  - dct:issued?:
+    - release_date: 2001-01-09T00:00:00Z
+  - dct:created?:
+    - submission_date: 2003-02-23
