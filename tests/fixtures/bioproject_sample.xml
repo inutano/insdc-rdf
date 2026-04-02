@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PackageSet>
+  <Package>
+    <Project>
+      <Project>
+        <ProjectID>
+          <ArchiveID accession="PRJNA3" archive="NCBI" id="3"/>
+        </ProjectID>
+        <ProjectDescr>
+          <Name>Borreliella burgdorferi B31</Name>
+          <Title>Causes Lyme disease</Title>
+          <Description>This is the type strain for Borreliella burgdorferi.</Description>
+          <ProjectReleaseDate>2001-01-09T00:00:00Z</ProjectReleaseDate>
+        </ProjectDescr>
+        <ProjectType>
+          <ProjectTypeSubmission>
+            <Target capture="eWhole" material="eGenome" sample_scope="eMultiisolate">
+              <Organism species="139" taxID="224326">
+                <OrganismName>Borreliella burgdorferi B31</OrganismName>
+              </Organism>
+            </Target>
+          </ProjectTypeSubmission>
+        </ProjectType>
+      </Project>
+      <Submission submitted="2003-02-23"/>
+    </Project>
+  </Package>
+  <Package>
+    <Project>
+      <Project>
+        <ProjectID>
+          <ArchiveID accession="PRJNA5" archive="NCBI" id="5"/>
+        </ProjectID>
+        <ProjectDescr>
+          <Title>Treponema pallidum subsp. pallidum str. Nichols</Title>
+          <Description>Causes syphilis.</Description>
+          <ProjectReleaseDate>2001-01-09T00:00:00Z</ProjectReleaseDate>
+        </ProjectDescr>
+        <ProjectType>
+          <ProjectTypeSubmission>
+            <Target capture="eWhole" material="eGenome" sample_scope="eMonoisolate">
+              <Organism species="160" taxID="243276">
+                <OrganismName>Treponema pallidum subsp. pallidum str. Nichols</OrganismName>
+              </Organism>
+            </Target>
+          </ProjectTypeSubmission>
+        </ProjectType>
+      </Project>
+      <Submission submitted="2003-02-23"/>
+    </Project>
+  </Package>
+  <Package>
+    <Project>
+      <Project>
+        <ProjectID>
+          <ArchiveID accession="PRJNA7" archive="NCBI" id="7"/>
+        </ProjectID>
+        <ProjectDescr>
+          <Name>Minimal project</Name>
+        </ProjectDescr>
+        <ProjectType>
+          <ProjectTypeSubmission/>
+        </ProjectType>
+      </Project>
+    </Project>
+  </Package>
+</PackageSet>

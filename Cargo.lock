@@ -348,10 +348,25 @@ dependencies = [
  "anyhow",
  "clap",
  "flate2",
+ "insdc-rdf-bioproject",
  "insdc-rdf-biosample",
  "insdc-rdf-core",
  "insdc-rdf-sra",
  "md-5",
+]
+
+[[package]]
+name = "insdc-rdf-bioproject"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "insdc-rdf-core",
+ "md-5",
+ "quick-xml",
+ "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

@@ -1,0 +1,17 @@
+[package]
+name = "insdc-rdf-bioproject"
+version = "0.1.0"
+edition = "2021"
+description = "BioProject XML to RDF converter"
+
+[dependencies]
+insdc-rdf-core = { path = "../core" }
+quick-xml = "0.37"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1"
+md-5 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"

@@ -56,10 +56,7 @@ fn main() -> anyhow::Result<()> {
         } => match source {
             SourceType::Biosample => insdc_rdf_biosample::run_convert(&input, &output_dir, chunk_size),
             SourceType::Sra => insdc_rdf_sra::run_convert(&input, &output_dir, chunk_size),
-            SourceType::Bioproject => {
-                eprintln!("BioProject converter not yet implemented");
-                std::process::exit(1);
-            }
+            SourceType::Bioproject => insdc_rdf_bioproject::run_convert(&input, &output_dir, chunk_size),
         },
         Commands::Validate { path } => {
             use insdc_rdf_biosample::validate;
