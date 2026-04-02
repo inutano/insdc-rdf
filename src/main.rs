@@ -55,10 +55,7 @@ fn main() -> anyhow::Result<()> {
             chunk_size,
         } => match source {
             SourceType::Biosample => insdc_rdf_biosample::run_convert(&input, &output_dir, chunk_size),
-            SourceType::Sra => {
-                eprintln!("SRA converter not yet implemented");
-                std::process::exit(1);
-            }
+            SourceType::Sra => insdc_rdf_sra::run_convert(&input, &output_dir, chunk_size),
             SourceType::Bioproject => {
                 eprintln!("BioProject converter not yet implemented");
                 std::process::exit(1);

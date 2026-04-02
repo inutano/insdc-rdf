@@ -15,6 +15,7 @@ path = "src/main.rs"
 [dependencies]
 insdc-rdf-core = { path = "crates/core" }
 insdc-rdf-biosample = { path = "crates/biosample" }
+insdc-rdf-sra = { path = "crates/sra" }
 clap = { version = "4", features = ["derive"] }
 anyhow = "1"
 md-5 = "0.10"
