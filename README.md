@@ -6,6 +6,19 @@ Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Stream
 - **SRA** — accession cross-links from `SRA_Accessions.tab`
 - **BioProject** — project metadata from `bioproject.xml`
 
+### Summary
+
+insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 183 million records across three sources in under 90 minutes, producing 4.4 billion RDF triples.
+
+| | Records | Triples | Conversion time |
+|---|---|---|---|
+| BioSample | 53.3M | ~2.9B | 55 min |
+| SRA | 129.1M | ~1.1B | 29 min |
+| BioProject | 823K | ~4.3M | 20 sec |
+| **Total** | **183.3M** | **4.4B** | **~85 min** |
+
+The output has been validated by loading all 4.4 billion triples into [QLever](https://github.com/ad-freiburg/qlever) and [Oxigraph](https://github.com/oxigraph/oxigraph), with SPARQL queries confirming all record counts match and spot checks returning correct data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
+
 ## Install
 
 ```bash
