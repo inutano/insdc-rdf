@@ -213,6 +213,69 @@ SELECT ?type (COUNT(?s) AS ?count) WHERE { ?s a ?type . } GROUP BY ?type ORDER B
 
 All counts match the conversion manifests exactly. Query response time: 16 ms.
 
+### Spot checks
+
+BioSample record with attributes:
+
+```sparql
+SELECT ?p ?o WHERE {
+  <http://identifiers.org/biosample/SAMN00000002> ?p ?o .
+} ORDER BY ?p
+```
+
+| Predicate | Object |
+|-----------|--------|
+| dct:created | 2008-04-04T08:44:24.950 |
+| dct:description | "Alistipes putredinis DSM 17216" |
+| dct:identifier | "SAMN00000002" |
+| dct:issued | 2008-04-04T00:00:00 |
+| dct:modified | 2022-09-25T02:00:02.729 |
+| rdfs:label | "Alistipes putredinis DSM 17216" |
+| rdf:type | biosample_ont:BioSampleRecord |
+| schema:additionalProperty | (27 PropertyValue nodes) |
+
+SRA run cross-links:
+
+```sparql
+SELECT ?p ?o WHERE {
+  <http://identifiers.org/insdc.sra/DRR000001> ?p ?o .
+} ORDER BY ?p
+```
+
+| Predicate | Object |
+|-----------|--------|
+| dct:identifier | "DRR000001" |
+| dct:issued | 2010-03-24T03:10:22Z |
+| dct:modified | 2022-09-23T10:09:59Z |
+| rdf:type | dra_ont:Run |
+| rdfs:seeAlso | insdc_sra:DRX000001, insdc_sra:DRS000001, insdc_sra:DRP000001 |
+| rdfs:seeAlso | idorg_biosample:SAMD00016353, idorg_bioproject:PRJDA38027 |
+
+BioProject metadata:
+
+```sparql
+SELECT ?p ?o WHERE {
+  <http://identifiers.org/bioproject/PRJNA3> ?p ?o .
+} ORDER BY ?p
+```
+
+| Predicate | Object |
+|-----------|--------|
+| dct:created | "2003-02-23" |
+| dct:description | "Causes Lyme disease" |
+| dct:identifier | "PRJNA3" |
+| dct:issued | 2001-01-09T00:00:00Z |
+| rdf:type | bioproject_ont:BioProjectRecord |
+| rdfs:label | "Borreliella burgdorferi B31" |
+
+### Predicate distribution
+
+```sparql
+SELECT ?p (COUNT(*) AS ?count) WHERE { ?s ?p ?o . } GROUP BY ?p ORDER BY DESC(?count)
+```
+
+See `scripts/validate_sparql_qlever.sh` for the full set of validation queries.
+
 ## Project structure
 
 ```
