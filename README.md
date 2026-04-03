@@ -155,6 +155,64 @@ Local workstation: Intel Xeon w5-3435X, 128 GB RAM, NVMe/HDD storage.
 
 NIG supercomputer (EPYC 9654, Lustre): ~0.72x local throughput for BioSample (Lustre I/O bound).
 
+## Validation with QLever
+
+The generated RDF can be loaded into [QLever](https://github.com/ad-freiburg/qlever) (University of Freiburg) for SPARQL querying and validation.
+
+### Setup
+
+```bash
+# Install qlever CLI (uses Docker)
+pip install qlever
+
+# Index all N-Triples output
+docker run --rm -u $(id -u):$(id -g) \
+  -v /path/to/qlever-workdir:/index \
+  -v /path/to/biosample/nt:/nt-biosample:ro \
+  -v /path/to/sra/nt:/nt-sra:ro \
+  -v /path/to/bioproject/nt:/nt-bioproject:ro \
+  -w /index --init --entrypoint bash \
+  docker.io/adfreiburg/qlever -c \
+  'qlever-index -i insdc-rdf -s insdc-rdf.settings.json \
+    --vocabulary-type on-disk-compressed \
+    -f <(cat /nt-bioproject/*.nt /nt-biosample/*.nt /nt-sra/*.nt) \
+    -g - -F nt -p false --stxxl-memory 10G'
+
+# Start SPARQL endpoint
+qlever start --name insdc-rdf \
+  --description "INSDC RDF" \
+  --port 7001 --memory-for-queries 20G --system docker
+```
+
+### Loading benchmark
+
+| Metric | Value |
+|--------|-------|
+| Total triples | 4,398,520,726 |
+| Index time | ~22 hours |
+| Index size on disk | 54 GB |
+| Distinct predicates | 11 |
+
+### Record counts (SPARQL validation)
+
+```sparql
+SELECT ?type (COUNT(?s) AS ?count) WHERE { ?s a ?type . } GROUP BY ?type ORDER BY DESC(?count)
+```
+
+| Type | Count |
+|------|-------|
+| schema:PropertyValue | 775,089,741 |
+| biosample_ont:BioSampleRecord | 53,342,722 |
+| dra_ont:Run | 41,361,437 |
+| dra_ont:Sample | 40,399,579 |
+| dra_ont:Experiment | 38,978,968 |
+| dra_ont:Submission | 7,509,943 |
+| bioproject_ont:BioProjectRecord | 823,572 |
+| dra_ont:Study | 705,171 |
+| dra_ont:Analysis | 145,442 |
+
+All counts match the conversion manifests exactly. Query response time: 16 ms.
+
 ## Project structure
 
 ```
