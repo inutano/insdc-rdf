@@ -184,14 +184,19 @@ qlever start --name insdc-rdf \
   --port 7001 --memory-for-queries 20G --system docker
 ```
 
-### Loading benchmark
+### Triplestore comparison
 
-| Metric | Value |
-|--------|-------|
-| Total triples | 4,398,520,726 |
-| Index time | ~22 hours |
-| Index size on disk | 54 GB |
-| Distinct predicates | 11 |
+Loaded all N-Triples output (~550 GB, 4.4 billion triples) into QLever and [Oxigraph](https://github.com/oxigraph/oxigraph):
+
+| Metric | QLever | Oxigraph |
+|--------|--------|----------|
+| Load/index time | ~22 hours | ~23 hours (+3h optimize) |
+| Store size on disk | 54 GB | 333 GB |
+| Record count by type | 16 ms | 6 min 50 sec |
+| Single record lookup | 21 ms | 45-111 ms |
+| Total triples | 4,398,520,726 | 4,398,520,726 |
+
+QLever excels at aggregation queries over billions of triples. Oxigraph is simpler to set up (single binary) and fast for point lookups.
 
 ### Record counts (SPARQL validation)
 
