@@ -309,6 +309,20 @@ insdc-rdf/
   tests/fixtures/   Test data
 ```
 
+## Roadmap
+
+### Deployment
+- [ ] Upload RDF output to [RDF Portal](https://rdfportal.org/) for public SPARQL access
+- [ ] Set up `scripts/daily_update.sh` for automated conversion on new NCBI dumps
+- [ ] Tag v0.1.0 release
+
+### Integration
+- [ ] **bsllmner-mk2** — LLM-based ontology annotation layer on top of BioSample attributes (enriches `OriginalSampleProperty` with `valueReference` and `AnnotatedSampleType` as defined in the [rdf-config biosample model](config/biosample/model.yaml))
+- [ ] PR the `%20` encoding fix and new SRA/BioProject configs to [dbcls/rdf-config](https://github.com/dbcls/rdf-config)
+
+### Related projects
+- [geo-rdf](https://github.com/inutano/geo-rdf) — GEO metadata to RDF (separate project, subset-first approach)
+
 ## License
 
 MIT
