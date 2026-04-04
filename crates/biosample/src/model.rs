@@ -21,11 +21,15 @@ pub struct Attribute {
 impl BioSampleRecord {
     /// Returns the IRI for this record: http://identifiers.org/biosample/{accession}
     pub fn iri(&self) -> String {
-        format!("{}{}", insdc_rdf_core::prefix::IDORG_BIOSAMPLE, self.accession)
+        format!(
+            "{}{}",
+            insdc_rdf_core::prefix::IDORG_BIOSAMPLE,
+            self.accession
+        )
     }
 }
 
-use percent_encoding::{AsciiSet, CONTROLS, utf8_percent_encode};
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 
 /// Characters that must be percent-encoded in an IRI fragment.
 const IRI_FRAGMENT_ENCODE_SET: &AsciiSet = &CONTROLS
@@ -47,14 +51,21 @@ const IRI_FRAGMENT_ENCODE_SET: &AsciiSet = &CONTROLS
 impl Attribute {
     /// Returns the preferred name for this attribute (harmonized_name > attribute_name).
     pub fn preferred_name(&self) -> &str {
-        self.harmonized_name.as_deref().unwrap_or(&self.attribute_name)
+        self.harmonized_name
+            .as_deref()
+            .unwrap_or(&self.attribute_name)
     }
 
     /// Returns the property IRI fragment for this attribute, URL-encoded.
     pub fn property_iri(&self, accession: &str) -> String {
         let name = self.preferred_name();
         let encoded = utf8_percent_encode(name, IRI_FRAGMENT_ENCODE_SET);
-        format!("{}{}#{}", insdc_rdf_core::prefix::DDBJ_BIOSAMPLE, accession, encoded)
+        format!(
+            "{}{}#{}",
+            insdc_rdf_core::prefix::DDBJ_BIOSAMPLE,
+            accession,
+            encoded
+        )
     }
 }
 
@@ -94,7 +105,10 @@ mod tests {
             display_name: None,
             value: Some("Level 3".to_string()),
         };
-        assert_eq!(attr.preferred_name(), "finishing strategy (depth of coverage)");
+        assert_eq!(
+            attr.preferred_name(),
+            "finishing strategy (depth of coverage)"
+        );
     }
 
     #[test]

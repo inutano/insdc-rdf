@@ -54,9 +54,13 @@ fn main() -> anyhow::Result<()> {
             output_dir,
             chunk_size,
         } => match source {
-            SourceType::Biosample => insdc_rdf_biosample::run_convert(&input, &output_dir, chunk_size),
+            SourceType::Biosample => {
+                insdc_rdf_biosample::run_convert(&input, &output_dir, chunk_size)
+            }
             SourceType::Sra => insdc_rdf_sra::run_convert(&input, &output_dir, chunk_size),
-            SourceType::Bioproject => insdc_rdf_bioproject::run_convert(&input, &output_dir, chunk_size),
+            SourceType::Bioproject => {
+                insdc_rdf_bioproject::run_convert(&input, &output_dir, chunk_size)
+            }
         },
         Commands::Validate { path } => {
             use insdc_rdf_biosample::validate;

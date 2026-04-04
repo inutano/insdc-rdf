@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use crate::model::BioSampleRecord;
 use super::Serializer;
+use crate::model::BioSampleRecord;
 use insdc_rdf_core::escape::escape_ntriples_string;
 use insdc_rdf_core::prefix::*;
 
@@ -13,27 +13,74 @@ impl Serializer for NTriplesSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &BioSampleRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &BioSampleRecord,
+    ) -> std::io::Result<()> {
         let acc = &record.accession;
         let subj = format!("{}{}", IDORG_BIOSAMPLE, acc);
 
-        writeln!(writer, "<{}> <{}> <{}BioSampleRecord> .", subj, RDF_TYPE, DDBJ_BIOSAMPLE_ONT)?;
-        writeln!(writer, "<{}> <{}identifier> \"{}\" .", subj, DCT, escape_ntriples_string(acc))?;
+        writeln!(
+            writer,
+            "<{}> <{}> <{}BioSampleRecord> .",
+            subj, RDF_TYPE, DDBJ_BIOSAMPLE_ONT
+        )?;
+        writeln!(
+            writer,
+            "<{}> <{}identifier> \"{}\" .",
+            subj,
+            DCT,
+            escape_ntriples_string(acc)
+        )?;
 
         if let Some(title) = &record.title {
-            writeln!(writer, "<{}> <{}description> \"{}\" .", subj, DCT, escape_ntriples_string(title))?;
-            writeln!(writer, "<{}> <{}label> \"{}\" .", subj, RDFS, escape_ntriples_string(title))?;
+            writeln!(
+                writer,
+                "<{}> <{}description> \"{}\" .",
+                subj,
+                DCT,
+                escape_ntriples_string(title)
+            )?;
+            writeln!(
+                writer,
+                "<{}> <{}label> \"{}\" .",
+                subj,
+                RDFS,
+                escape_ntriples_string(title)
+            )?;
         }
 
         let xsd_datetime = format!("{}dateTime", XSD);
         if let Some(date) = &record.submission_date {
-            writeln!(writer, "<{}> <{}created> \"{}\"^^<{}> .", subj, DCT, escape_ntriples_string(date), xsd_datetime)?;
+            writeln!(
+                writer,
+                "<{}> <{}created> \"{}\"^^<{}> .",
+                subj,
+                DCT,
+                escape_ntriples_string(date),
+                xsd_datetime
+            )?;
         }
         if let Some(date) = &record.last_update {
-            writeln!(writer, "<{}> <{}modified> \"{}\"^^<{}> .", subj, DCT, escape_ntriples_string(date), xsd_datetime)?;
+            writeln!(
+                writer,
+                "<{}> <{}modified> \"{}\"^^<{}> .",
+                subj,
+                DCT,
+                escape_ntriples_string(date),
+                xsd_datetime
+            )?;
         }
         if let Some(date) = &record.publication_date {
-            writeln!(writer, "<{}> <{}issued> \"{}\"^^<{}> .", subj, DCT, escape_ntriples_string(date), xsd_datetime)?;
+            writeln!(
+                writer,
+                "<{}> <{}issued> \"{}\"^^<{}> .",
+                subj,
+                DCT,
+                escape_ntriples_string(date),
+                xsd_datetime
+            )?;
         }
 
         let schema_additional = format!("{}additionalProperty", SCHEMA);
@@ -46,10 +93,30 @@ impl Serializer for NTriplesSerializer {
             let name = attr.preferred_name();
             let value = attr.value.as_deref().unwrap_or("");
 
-            writeln!(writer, "<{}> <{}> <{}> .", subj, schema_additional, prop_iri)?;
-            writeln!(writer, "<{}> <{}> <{}> .", prop_iri, RDF_TYPE, schema_propval)?;
-            writeln!(writer, "<{}> <{}> \"{}\" .", prop_iri, schema_name, escape_ntriples_string(name))?;
-            writeln!(writer, "<{}> <{}> \"{}\" .", prop_iri, schema_value, escape_ntriples_string(value))?;
+            writeln!(
+                writer,
+                "<{}> <{}> <{}> .",
+                subj, schema_additional, prop_iri
+            )?;
+            writeln!(
+                writer,
+                "<{}> <{}> <{}> .",
+                prop_iri, RDF_TYPE, schema_propval
+            )?;
+            writeln!(
+                writer,
+                "<{}> <{}> \"{}\" .",
+                prop_iri,
+                schema_name,
+                escape_ntriples_string(name)
+            )?;
+            writeln!(
+                writer,
+                "<{}> <{}> \"{}\" .",
+                prop_iri,
+                schema_value,
+                escape_ntriples_string(value)
+            )?;
         }
 
         Ok(())

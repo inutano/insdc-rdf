@@ -33,9 +33,13 @@ mod tests {
     fn test_iri() {
         let rec = BioProjectRecord {
             accession: "PRJNA3".to_string(),
-            name: None, title: None, description: None,
-            organism_name: None, taxonomy_id: None,
-            release_date: None, submission_date: None,
+            name: None,
+            title: None,
+            description: None,
+            organism_name: None,
+            taxonomy_id: None,
+            release_date: None,
+            submission_date: None,
         };
         assert_eq!(rec.iri(), "http://identifiers.org/bioproject/PRJNA3");
     }
@@ -46,8 +50,11 @@ mod tests {
             accession: "PRJNA3".to_string(),
             name: Some("Project Name".to_string()),
             title: Some("Project Title".to_string()),
-            description: None, organism_name: None, taxonomy_id: None,
-            release_date: None, submission_date: None,
+            description: None,
+            organism_name: None,
+            taxonomy_id: None,
+            release_date: None,
+            submission_date: None,
         };
         assert_eq!(rec.label(), Some("Project Name"));
     }
@@ -58,8 +65,11 @@ mod tests {
             accession: "PRJNA3".to_string(),
             name: None,
             title: Some("Project Title".to_string()),
-            description: None, organism_name: None, taxonomy_id: None,
-            release_date: None, submission_date: None,
+            description: None,
+            organism_name: None,
+            taxonomy_id: None,
+            release_date: None,
+            submission_date: None,
         };
         assert_eq!(rec.label(), Some("Project Title"));
     }

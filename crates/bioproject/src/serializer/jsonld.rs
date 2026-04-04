@@ -1,8 +1,8 @@
-use std::io::Write;
 use serde::Serialize;
+use std::io::Write;
 
-use crate::model::BioProjectRecord;
 use super::Serializer;
+use crate::model::BioProjectRecord;
 
 #[derive(Debug, Clone, Serialize)]
 struct JsonLdContext {
@@ -23,7 +23,10 @@ struct TypedDateTime {
 
 impl TypedDateTime {
     fn new(v: impl Into<String>) -> Self {
-        TypedDateTime { value: v.into(), r#type: "xsd:dateTime" }
+        TypedDateTime {
+            value: v.into(),
+            r#type: "xsd:dateTime",
+        }
     }
 }
 
@@ -56,7 +59,11 @@ impl Serializer for JsonLdSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &BioProjectRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &BioProjectRecord,
+    ) -> std::io::Result<()> {
         let obj = JsonLdRecord {
             context: JsonLdContext {
                 idorg_bp: "http://identifiers.org/bioproject/",
@@ -86,7 +93,9 @@ impl Serializer for JsonLdSerializer {
 }
 
 impl JsonLdSerializer {
-    pub fn new() -> Self { JsonLdSerializer }
+    pub fn new() -> Self {
+        JsonLdSerializer
+    }
 }
 
 #[cfg(test)]
@@ -100,8 +109,11 @@ mod tests {
             accession: "PRJNA3".to_string(),
             name: Some("Test".to_string()),
             title: Some("Title".to_string()),
-            description: None, organism_name: None, taxonomy_id: None,
-            release_date: None, submission_date: None,
+            description: None,
+            organism_name: None,
+            taxonomy_id: None,
+            release_date: None,
+            submission_date: None,
         };
         let mut buf = Vec::new();
         ser.write_header(&mut buf).unwrap();

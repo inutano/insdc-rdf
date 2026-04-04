@@ -4,11 +4,11 @@ pub fn escape_turtle_string(s: &str) -> String {
     for ch in s.chars() {
         match ch {
             '\\' => out.push_str("\\\\"),
-            '"'  => out.push_str("\\\""),
+            '"' => out.push_str("\\\""),
             '\n' => out.push_str("\\n"),
             '\r' => out.push_str("\\r"),
             '\t' => out.push_str("\\t"),
-            c    => out.push(c),
+            c => out.push(c),
         }
     }
     out

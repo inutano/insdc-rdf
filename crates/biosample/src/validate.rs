@@ -95,9 +95,7 @@ pub fn validate_ntriples(path: &Path) -> ValidationResult {
         }
 
         // Count BioSampleRecord type triples
-        if trimmed.contains("BioSampleRecord")
-            && trimmed.contains("rdf-syntax-ns#type")
-        {
+        if trimmed.contains("BioSampleRecord") && trimmed.contains("rdf-syntax-ns#type") {
             record_count += 1;
         }
     }
@@ -154,19 +152,13 @@ mod tests {
     use tempfile::TempDir;
 
     fn write_temp_ttl(content: &str) -> NamedTempFile {
-        let mut f = tempfile::Builder::new()
-            .suffix(".ttl")
-            .tempfile()
-            .unwrap();
+        let mut f = tempfile::Builder::new().suffix(".ttl").tempfile().unwrap();
         write!(f, "{}", content).unwrap();
         f
     }
 
     fn write_temp_nt(content: &str) -> NamedTempFile {
-        let mut f = tempfile::Builder::new()
-            .suffix(".nt")
-            .tempfile()
-            .unwrap();
+        let mut f = tempfile::Builder::new().suffix(".nt").tempfile().unwrap();
         write!(f, "{}", content).unwrap();
         f
     }
@@ -199,7 +191,11 @@ idorg:SAMN00000002
     fn test_valid_ttl_no_errors() {
         let f = write_temp_ttl(VALID_TTL);
         let result = validate_turtle(f.path());
-        assert!(result.errors.is_empty(), "Expected no errors, got: {:?}", result.errors);
+        assert!(
+            result.errors.is_empty(),
+            "Expected no errors, got: {:?}",
+            result.errors
+        );
         assert_eq!(result.record_count, 2);
     }
 
@@ -207,8 +203,14 @@ idorg:SAMN00000002
     fn test_ttl_empty_identifier_detected() {
         let f = write_temp_ttl(EMPTY_IDENTIFIER_TTL);
         let result = validate_turtle(f.path());
-        assert!(!result.errors.is_empty(), "Expected errors for empty identifier");
-        assert!(result.errors.iter().any(|e| e.contains("Empty dct:identifier")));
+        assert!(
+            !result.errors.is_empty(),
+            "Expected errors for empty identifier"
+        );
+        assert!(result
+            .errors
+            .iter()
+            .any(|e| e.contains("Empty dct:identifier")));
     }
 
     #[test]
@@ -224,8 +226,12 @@ idorg:BADRECORD123
         let f = write_temp_ttl(bad_ttl);
         let result = validate_turtle(f.path());
         assert!(
-            result.errors.iter().any(|e| e.contains("does not start with SAM")),
-            "Expected malformed IRI error, got: {:?}", result.errors
+            result
+                .errors
+                .iter()
+                .any(|e| e.contains("does not start with SAM")),
+            "Expected malformed IRI error, got: {:?}",
+            result.errors
         );
     }
 
@@ -233,7 +239,11 @@ idorg:BADRECORD123
     fn test_valid_ntriples_no_errors() {
         let f = write_temp_nt(VALID_NT);
         let result = validate_ntriples(f.path());
-        assert!(result.errors.is_empty(), "Expected no errors, got: {:?}", result.errors);
+        assert!(
+            result.errors.is_empty(),
+            "Expected no errors, got: {:?}",
+            result.errors
+        );
         assert_eq!(result.record_count, 2);
     }
 
@@ -242,8 +252,14 @@ idorg:BADRECORD123
         let bad_nt = "<http://identifiers.org/biosample/SAMN00000002> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://ddbj.nig.ac.jp/ontologies/biosample/BioSampleRecord>\n";
         let f = write_temp_nt(bad_nt);
         let result = validate_ntriples(f.path());
-        assert!(!result.errors.is_empty(), "Expected errors for missing \" .\"");
-        assert!(result.errors.iter().any(|e| e.contains("does not end with")));
+        assert!(
+            !result.errors.is_empty(),
+            "Expected errors for missing \" .\""
+        );
+        assert!(result
+            .errors
+            .iter()
+            .any(|e| e.contains("does not end with")));
     }
 
     #[test]
@@ -265,7 +281,12 @@ idorg:BADRECORD123
         let results = validate_directory(dir.path());
         assert_eq!(results.len(), 2);
         for result in &results {
-            assert!(result.errors.is_empty(), "Expected no errors in {}: {:?}", result.file, result.errors);
+            assert!(
+                result.errors.is_empty(),
+                "Expected no errors in {}: {:?}",
+                result.file,
+                result.errors
+            );
         }
         let total_records: usize = results.iter().map(|r| r.record_count).sum();
         assert_eq!(total_records, 4); // 2 from TTL + 2 from NT

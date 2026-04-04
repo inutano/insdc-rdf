@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
-use insdc_rdf_core::error::ConvertError;
 use crate::model::{SraAccessionRecord, SraType};
+use insdc_rdf_core::error::ConvertError;
 
 /// Column indices in SRA_Accessions.tab (0-based).
 const COL_ACCESSION: usize = 0;
@@ -44,7 +44,9 @@ impl<R: BufRead> SraAccessionParser<R> {
     pub fn next_record(&mut self) -> Result<Option<SraAccessionRecord>, ConvertError> {
         loop {
             self.line_buf.clear();
-            let bytes_read = self.reader.read_line(&mut self.line_buf)
+            let bytes_read = self
+                .reader
+                .read_line(&mut self.line_buf)
                 .map_err(ConvertError::Io)?;
             if bytes_read == 0 {
                 return Ok(None); // EOF
@@ -70,7 +72,11 @@ impl<R: BufRead> SraAccessionParser<R> {
             if fields.len() < EXPECTED_COLUMNS {
                 return Err(ConvertError::TsvParse {
                     line: self.line_number,
-                    message: format!("expected {} columns, got {}", EXPECTED_COLUMNS, fields.len()),
+                    message: format!(
+                        "expected {} columns, got {}",
+                        EXPECTED_COLUMNS,
+                        fields.len()
+                    ),
                 });
             }
 
@@ -139,9 +145,11 @@ mod tests {
     }
 
     fn sample_tsv() -> String {
-        std::fs::read_to_string(
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/fixtures/sra_accessions_sample.tab")
-        ).unwrap()
+        std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/fixtures/sra_accessions_sample.tab"
+        ))
+        .unwrap()
     }
 
     #[test]

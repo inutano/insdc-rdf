@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use crate::model::BioSampleRecord;
 use super::Serializer;
+use crate::model::BioSampleRecord;
 use insdc_rdf_core::escape::escape_turtle_string;
 use insdc_rdf_core::prefix::*;
 
@@ -20,7 +20,11 @@ impl Serializer for TurtleSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &BioSampleRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &BioSampleRecord,
+    ) -> std::io::Result<()> {
         let acc = &record.accession;
 
         let mut po_lines: Vec<String> = Vec::new();
@@ -29,18 +33,30 @@ impl Serializer for TurtleSerializer {
         po_lines.push(format!("dct:identifier \"{}\"", escape_turtle_string(acc)));
 
         if let Some(title) = &record.title {
-            po_lines.push(format!("dct:description \"{}\"", escape_turtle_string(title)));
+            po_lines.push(format!(
+                "dct:description \"{}\"",
+                escape_turtle_string(title)
+            ));
             po_lines.push(format!("rdfs:label \"{}\"", escape_turtle_string(title)));
         }
 
         if let Some(date) = &record.submission_date {
-            po_lines.push(format!("dct:created \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:created \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
         if let Some(date) = &record.last_update {
-            po_lines.push(format!("dct:modified \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:modified \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
         if let Some(date) = &record.publication_date {
-            po_lines.push(format!("dct:issued \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:issued \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
 
         if !record.attributes.is_empty() {

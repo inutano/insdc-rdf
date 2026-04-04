@@ -3,8 +3,8 @@ use std::io::BufRead;
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 
-use insdc_rdf_core::error::ConvertError;
 use crate::model::BioProjectRecord;
+use insdc_rdf_core::error::ConvertError;
 
 /// A streaming parser for NCBI bioproject.xml.
 ///
@@ -51,12 +51,13 @@ impl<R: BufRead> BioProjectParser<R> {
         // Scan for <Package> start tag
         loop {
             self.buf.clear();
-            let event = self.reader.read_event_into(&mut self.buf).map_err(|e| {
-                ConvertError::XmlParse {
-                    offset: self.reader.error_position(),
-                    message: e.to_string(),
-                }
-            })?;
+            let event =
+                self.reader
+                    .read_event_into(&mut self.buf)
+                    .map_err(|e| ConvertError::XmlParse {
+                        offset: self.reader.error_position(),
+                        message: e.to_string(),
+                    })?;
 
             match event {
                 Event::Start(ref e) if e.name().as_ref() == b"Package" => {
@@ -85,12 +86,13 @@ impl<R: BufRead> BioProjectParser<R> {
 
         loop {
             self.buf.clear();
-            let event = self.reader.read_event_into(&mut self.buf).map_err(|e| {
-                ConvertError::XmlParse {
-                    offset: self.reader.error_position(),
-                    message: e.to_string(),
-                }
-            })?;
+            let event =
+                self.reader
+                    .read_event_into(&mut self.buf)
+                    .map_err(|e| ConvertError::XmlParse {
+                        offset: self.reader.error_position(),
+                        message: e.to_string(),
+                    })?;
 
             match event {
                 Event::Start(ref e) => {
@@ -347,9 +349,11 @@ mod tests {
     }
 
     fn fixture_xml() -> String {
-        std::fs::read_to_string(
-            concat!(env!("CARGO_MANIFEST_DIR"), "/../../tests/fixtures/bioproject_sample.xml")
-        ).unwrap()
+        std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/fixtures/bioproject_sample.xml"
+        ))
+        .unwrap()
     }
 
     #[test]
@@ -367,7 +371,10 @@ mod tests {
         assert_eq!(rec.name.as_deref(), Some("Borreliella burgdorferi B31"));
         assert_eq!(rec.title.as_deref(), Some("Causes Lyme disease"));
         assert!(rec.description.as_deref().unwrap().contains("type strain"));
-        assert_eq!(rec.organism_name.as_deref(), Some("Borreliella burgdorferi B31"));
+        assert_eq!(
+            rec.organism_name.as_deref(),
+            Some("Borreliella burgdorferi B31")
+        );
         assert_eq!(rec.taxonomy_id.as_deref(), Some("224326"));
         assert_eq!(rec.release_date.as_deref(), Some("2001-01-09T00:00:00Z"));
         assert_eq!(rec.submission_date.as_deref(), Some("2003-02-23"));

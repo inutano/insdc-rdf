@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use crate::model::BioProjectRecord;
 use super::Serializer;
+use crate::model::BioProjectRecord;
 use insdc_rdf_core::escape::escape_turtle_string;
 use insdc_rdf_core::prefix::*;
 
@@ -19,7 +19,11 @@ impl Serializer for TurtleSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &BioProjectRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &BioProjectRecord,
+    ) -> std::io::Result<()> {
         let acc = &record.accession;
         let mut po_lines: Vec<String> = Vec::new();
 
@@ -27,7 +31,10 @@ impl Serializer for TurtleSerializer {
         po_lines.push(format!("dct:identifier \"{}\"", escape_turtle_string(acc)));
 
         if let Some(ref title) = record.title {
-            po_lines.push(format!("dct:description \"{}\"", escape_turtle_string(title)));
+            po_lines.push(format!(
+                "dct:description \"{}\"",
+                escape_turtle_string(title)
+            ));
         }
 
         if let Some(label) = record.label() {
@@ -35,10 +42,16 @@ impl Serializer for TurtleSerializer {
         }
 
         if let Some(ref date) = record.release_date {
-            po_lines.push(format!("dct:issued \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:issued \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
         if let Some(ref date) = record.submission_date {
-            po_lines.push(format!("dct:created \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:created \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
 
         writeln!(writer, "idorg_bp:{}", acc)?;
@@ -61,7 +74,9 @@ impl Serializer for TurtleSerializer {
 }
 
 impl TurtleSerializer {
-    pub fn new() -> Self { TurtleSerializer }
+    pub fn new() -> Self {
+        TurtleSerializer
+    }
 
     pub fn record_to_string(&self, record: &BioProjectRecord) -> String {
         let mut buf = Vec::new();

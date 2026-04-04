@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use crate::model::SraAccessionRecord;
 use super::Serializer;
+use crate::model::SraAccessionRecord;
 use insdc_rdf_core::escape::escape_ntriples_string;
 use insdc_rdf_core::prefix::*;
 
@@ -13,23 +13,51 @@ impl Serializer for NTriplesSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &SraAccessionRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &SraAccessionRecord,
+    ) -> std::io::Result<()> {
         let subj = record.iri();
         let class = record.sra_type.rdf_class();
 
         // rdf:type
-        writeln!(writer, "<{}> <{}> <{}{}> .", subj, RDF_TYPE, DDBJ_DRA_ONT, class)?;
+        writeln!(
+            writer,
+            "<{}> <{}> <{}{}> .",
+            subj, RDF_TYPE, DDBJ_DRA_ONT, class
+        )?;
 
         // dct:identifier
-        writeln!(writer, "<{}> <{}identifier> \"{}\" .", subj, DCT, escape_ntriples_string(&record.accession))?;
+        writeln!(
+            writer,
+            "<{}> <{}identifier> \"{}\" .",
+            subj,
+            DCT,
+            escape_ntriples_string(&record.accession)
+        )?;
 
         // dates
         let xsd_dt = format!("{}dateTime", XSD);
         if let Some(ref date) = record.published {
-            writeln!(writer, "<{}> <{}issued> \"{}\"^^<{}> .", subj, DCT, escape_ntriples_string(date), xsd_dt)?;
+            writeln!(
+                writer,
+                "<{}> <{}issued> \"{}\"^^<{}> .",
+                subj,
+                DCT,
+                escape_ntriples_string(date),
+                xsd_dt
+            )?;
         }
         if let Some(ref date) = record.updated {
-            writeln!(writer, "<{}> <{}modified> \"{}\"^^<{}> .", subj, DCT, escape_ntriples_string(date), xsd_dt)?;
+            writeln!(
+                writer,
+                "<{}> <{}modified> \"{}\"^^<{}> .",
+                subj,
+                DCT,
+                escape_ntriples_string(date),
+                xsd_dt
+            )?;
         }
 
         // rdfs:seeAlso
@@ -67,7 +95,10 @@ mod tests {
         SraAccessionRecord {
             accession: "SRR000001".to_string(),
             sra_type: SraType::Run,
-            submission: None, updated: None, published: None, center: None,
+            submission: None,
+            updated: None,
+            published: None,
+            center: None,
             experiment: Some("SRX000001".to_string()),
             sample: Some("SRS000001".to_string()),
             study: Some("SRP000001".to_string()),

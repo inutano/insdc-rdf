@@ -1,7 +1,7 @@
 use std::io::Write;
 
-use crate::model::SraAccessionRecord;
 use super::Serializer;
+use crate::model::SraAccessionRecord;
 use insdc_rdf_core::escape::escape_turtle_string;
 use insdc_rdf_core::prefix::*;
 
@@ -21,7 +21,11 @@ impl Serializer for TurtleSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &SraAccessionRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &SraAccessionRecord,
+    ) -> std::io::Result<()> {
         let acc = &record.accession;
         let class = record.sra_type.rdf_class();
 
@@ -30,10 +34,16 @@ impl Serializer for TurtleSerializer {
         po_lines.push(format!("dct:identifier \"{}\"", escape_turtle_string(acc)));
 
         if let Some(ref date) = record.published {
-            po_lines.push(format!("dct:issued \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:issued \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
         if let Some(ref date) = record.updated {
-            po_lines.push(format!("dct:modified \"{}\"^^xsd:dateTime", escape_turtle_string(date)));
+            po_lines.push(format!(
+                "dct:modified \"{}\"^^xsd:dateTime",
+                escape_turtle_string(date)
+            ));
         }
 
         // rdfs:seeAlso cross-links

@@ -1,8 +1,8 @@
-use std::io::Write;
 use serde::Serialize;
+use std::io::Write;
 
-use crate::model::BioSampleRecord;
 use super::Serializer;
+use crate::model::BioSampleRecord;
 
 #[derive(Debug, Clone, Serialize)]
 struct JsonLdContext {
@@ -26,7 +26,10 @@ struct TypedDateTime {
 
 impl TypedDateTime {
     fn new(v: impl Into<String>) -> Self {
-        TypedDateTime { value: v.into(), r#type: "xsd:dateTime" }
+        TypedDateTime {
+            value: v.into(),
+            r#type: "xsd:dateTime",
+        }
     }
 }
 
@@ -73,7 +76,11 @@ impl Serializer for JsonLdSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &BioSampleRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &BioSampleRecord,
+    ) -> std::io::Result<()> {
         let acc = &record.accession;
 
         let additional_property: Vec<PropertyValue> = record

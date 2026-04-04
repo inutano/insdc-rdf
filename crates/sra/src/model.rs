@@ -99,9 +99,15 @@ mod tests {
         let rec = SraAccessionRecord {
             accession: "SRR000001".to_string(),
             sra_type: SraType::Run,
-            submission: None, updated: None, published: None, center: None,
-            experiment: None, sample: None, study: None,
-            biosample: None, bioproject: None,
+            submission: None,
+            updated: None,
+            published: None,
+            center: None,
+            experiment: None,
+            sample: None,
+            study: None,
+            biosample: None,
+            bioproject: None,
         };
         assert_eq!(rec.iri(), "http://identifiers.org/insdc.sra/SRR000001");
     }
@@ -111,7 +117,10 @@ mod tests {
         let rec = SraAccessionRecord {
             accession: "DRR000001".to_string(),
             sra_type: SraType::Run,
-            submission: None, updated: None, published: None, center: None,
+            submission: None,
+            updated: None,
+            published: None,
+            center: None,
             experiment: Some("DRX000001".to_string()),
             sample: Some("DRS000001".to_string()),
             study: Some("DRP000001".to_string()),
@@ -130,8 +139,13 @@ mod tests {
         let rec = SraAccessionRecord {
             accession: "DRS000001".to_string(),
             sra_type: SraType::Sample,
-            submission: None, updated: None, published: None, center: None,
-            experiment: None, sample: None, study: None,
+            submission: None,
+            updated: None,
+            published: None,
+            center: None,
+            experiment: None,
+            sample: None,
+            study: None,
             biosample: Some("SAMD00016353".to_string()),
             bioproject: None,
         };

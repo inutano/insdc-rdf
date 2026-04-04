@@ -1,8 +1,8 @@
-use std::io::Write;
 use serde::Serialize;
+use std::io::Write;
 
-use crate::model::SraAccessionRecord;
 use super::Serializer;
+use crate::model::SraAccessionRecord;
 
 #[derive(Debug, Clone, Serialize)]
 struct JsonLdContext {
@@ -27,7 +27,10 @@ struct TypedDateTime {
 
 impl TypedDateTime {
     fn new(v: impl Into<String>) -> Self {
-        TypedDateTime { value: v.into(), r#type: "xsd:dateTime" }
+        TypedDateTime {
+            value: v.into(),
+            r#type: "xsd:dateTime",
+        }
     }
 }
 
@@ -64,7 +67,11 @@ impl Serializer for JsonLdSerializer {
         Ok(())
     }
 
-    fn write_record<W: Write>(&self, writer: &mut W, record: &SraAccessionRecord) -> std::io::Result<()> {
+    fn write_record<W: Write>(
+        &self,
+        writer: &mut W,
+        record: &SraAccessionRecord,
+    ) -> std::io::Result<()> {
         let see_also: Vec<SeeAlso> = record
             .see_also_iris()
             .into_iter()
@@ -116,11 +123,13 @@ mod tests {
         SraAccessionRecord {
             accession: "DRR000001".to_string(),
             sra_type: SraType::Run,
-            submission: None, updated: None,
+            submission: None,
+            updated: None,
             published: Some("2010-03-24T03:10:22Z".to_string()),
             center: None,
             experiment: Some("DRX000001".to_string()),
-            sample: None, study: None,
+            sample: None,
+            study: None,
             biosample: Some("SAMD00016353".to_string()),
             bioproject: None,
         }

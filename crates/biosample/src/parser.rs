@@ -3,8 +3,8 @@ use std::io::BufRead;
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 
-use insdc_rdf_core::error::ConvertError;
 use crate::model::{Attribute, BioSampleRecord};
+use insdc_rdf_core::error::ConvertError;
 
 /// A streaming parser for NCBI BioSample XML.
 ///
@@ -38,12 +38,13 @@ impl<R: BufRead> BioSampleParser<R> {
         // Scan forward until we find a <BioSample ...> start tag
         loop {
             self.buf.clear();
-            let event = self.reader.read_event_into(&mut self.buf).map_err(|e| {
-                ConvertError::XmlParse {
-                    offset: self.reader.error_position(),
-                    message: e.to_string(),
-                }
-            })?;
+            let event =
+                self.reader
+                    .read_event_into(&mut self.buf)
+                    .map_err(|e| ConvertError::XmlParse {
+                        offset: self.reader.error_position(),
+                        message: e.to_string(),
+                    })?;
 
             match event {
                 Event::Start(ref e) if e.name().as_ref() == b"BioSample" => {
@@ -102,7 +103,9 @@ impl<R: BufRead> BioSampleParser<R> {
 
     /// Parse the children of a `<BioSample>` element until its closing tag.
     /// Returns (title, attributes).
-    fn parse_biosample_children(&mut self) -> Result<(Option<String>, Vec<Attribute>), ConvertError> {
+    fn parse_biosample_children(
+        &mut self,
+    ) -> Result<(Option<String>, Vec<Attribute>), ConvertError> {
         let mut title: Option<String> = None;
         let mut attributes: Vec<Attribute> = Vec::new();
         let mut depth: u32 = 1; // we are inside <BioSample>
@@ -116,12 +119,13 @@ impl<R: BufRead> BioSampleParser<R> {
 
         loop {
             self.buf.clear();
-            let event = self.reader.read_event_into(&mut self.buf).map_err(|e| {
-                ConvertError::XmlParse {
-                    offset: self.reader.error_position(),
-                    message: e.to_string(),
-                }
-            })?;
+            let event =
+                self.reader
+                    .read_event_into(&mut self.buf)
+                    .map_err(|e| ConvertError::XmlParse {
+                        offset: self.reader.error_position(),
+                        message: e.to_string(),
+                    })?;
 
             match event {
                 Event::Start(ref e) => {
@@ -322,7 +326,10 @@ mod tests {
         assert_eq!(rec.title.as_deref(), Some("Test organism sample"));
         assert_eq!(rec.attributes.len(), 2);
         assert_eq!(rec.attributes[0].attribute_name, "organism");
-        assert_eq!(rec.attributes[0].harmonized_name.as_deref(), Some("organism"));
+        assert_eq!(
+            rec.attributes[0].harmonized_name.as_deref(),
+            Some("organism")
+        );
         assert_eq!(rec.attributes[0].display_name.as_deref(), Some("organism"));
         assert_eq!(rec.attributes[0].value.as_deref(), Some("Homo sapiens"));
         assert_eq!(rec.attributes[1].attribute_name, "strain");

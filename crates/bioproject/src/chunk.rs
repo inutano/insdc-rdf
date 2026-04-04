@@ -67,8 +67,8 @@ impl ChunkWriter {
             completed_at: chrono::Utc::now().to_rfc3339(),
         };
 
-        let manifest_json = serde_json::to_string_pretty(&manifest)
-            .map_err(std::io::Error::other)?;
+        let manifest_json =
+            serde_json::to_string_pretty(&manifest).map_err(std::io::Error::other)?;
         fs::write(self.output_dir.join("manifest.json"), manifest_json)?;
         self.progress.save(&self.progress_path)?;
 
@@ -84,7 +84,11 @@ impl ChunkWriter {
 
         // TTL
         {
-            let file = File::create(self.output_dir.join("ttl").join(format!("{}.ttl", chunk_name)))?;
+            let file = File::create(
+                self.output_dir
+                    .join("ttl")
+                    .join(format!("{}.ttl", chunk_name)),
+            )?;
             let mut writer = BufWriter::new(file);
             self.turtle_ser.write_header(&mut writer)?;
             for record in &self.buffer {
@@ -95,7 +99,11 @@ impl ChunkWriter {
 
         // JSON-LD
         {
-            let file = File::create(self.output_dir.join("jsonld").join(format!("{}.jsonld", chunk_name)))?;
+            let file = File::create(
+                self.output_dir
+                    .join("jsonld")
+                    .join(format!("{}.jsonld", chunk_name)),
+            )?;
             let mut writer = BufWriter::new(file);
             write!(writer, "[")?;
             for (i, record) in self.buffer.iter().enumerate() {
@@ -109,7 +117,11 @@ impl ChunkWriter {
 
         // N-Triples
         {
-            let file = File::create(self.output_dir.join("nt").join(format!("{}.nt", chunk_name)))?;
+            let file = File::create(
+                self.output_dir
+                    .join("nt")
+                    .join(format!("{}.nt", chunk_name)),
+            )?;
             let mut writer = BufWriter::new(file);
             for record in &self.buffer {
                 self.ntriples_ser.write_record(&mut writer, record)?;
