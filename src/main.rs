@@ -4,6 +4,7 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(name = "insdc-rdf")]
 #[command(about = "Convert INSDC sequence archive metadata to RDF")]
+#[command(version = env!("BUILD_VERSION"))]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
