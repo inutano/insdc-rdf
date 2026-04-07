@@ -12,7 +12,6 @@ fn next_bnode() -> String {
     format!("_:b{}", BLANK_NODE_COUNTER.fetch_add(1, Ordering::Relaxed))
 }
 
-
 #[derive(Debug, Clone, Default)]
 pub struct NTriplesSerializer;
 
@@ -112,11 +111,7 @@ impl Serializer for NTriplesSerializer {
         if has_design {
             let dbn = next_bnode();
             writeln!(writer, "<{}> <{}design> {} .", subj, dra, dbn)?;
-            writeln!(
-                writer,
-                "{} <{}> <{}ExperimentDesign> .",
-                dbn, RDF_TYPE, dra
-            )?;
+            writeln!(writer, "{} <{}> <{}ExperimentDesign> .", dbn, RDF_TYPE, dra)?;
 
             if let Some(ref name) = record.library_name {
                 writeln!(
@@ -279,7 +274,11 @@ mod tests {
         let ser = NTriplesSerializer::new();
         let s = ser.record_to_string(&full_record());
         for line in s.lines() {
-            assert!(line.ends_with(" ."), "Line does not end with ' .': {:?}", line);
+            assert!(
+                line.ends_with(" ."),
+                "Line does not end with ' .': {:?}",
+                line
+            );
         }
     }
 
@@ -299,8 +298,14 @@ mod tests {
     fn test_no_prefixed_names() {
         let ser = NTriplesSerializer::new();
         let s = ser.record_to_string(&full_record());
-        assert!(!s.contains("insdc_sra:"), "should not contain insdc_sra: prefix");
-        assert!(!s.contains("dra_ont:"), "should not contain dra_ont: prefix");
+        assert!(
+            !s.contains("insdc_sra:"),
+            "should not contain insdc_sra: prefix"
+        );
+        assert!(
+            !s.contains("dra_ont:"),
+            "should not contain dra_ont: prefix"
+        );
         assert!(!s.contains("dct:"), "should not contain dct: prefix");
         assert!(!s.contains("rdfs:"), "should not contain rdfs: prefix");
         assert!(!s.contains("xsd:"), "should not contain xsd: prefix");
@@ -316,7 +321,12 @@ mod tests {
             .split_whitespace()
             .filter(|t| t.starts_with("_:b"))
             .collect();
-        assert_eq!(bnodes.len(), 3, "expected 3 distinct blank nodes, got {:?}", bnodes);
+        assert_eq!(
+            bnodes.len(),
+            3,
+            "expected 3 distinct blank nodes, got {:?}",
+            bnodes
+        );
     }
 
     #[test]
@@ -339,7 +349,11 @@ mod tests {
         let ser = NTriplesSerializer::new();
         let s = ser.record_to_string(&minimal_record());
         let lines: Vec<&str> = s.lines().collect();
-        assert_eq!(lines.len(), 2, "minimal record should have exactly 2 lines: type + identifier");
+        assert_eq!(
+            lines.len(),
+            2,
+            "minimal record should have exactly 2 lines: type + identifier"
+        );
         assert!(s.contains("Experiment"), "should have type triple");
         assert!(s.contains("identifier"), "should have identifier triple");
         assert!(!s.contains("_:b"), "should have no blank nodes");

@@ -41,16 +41,10 @@ impl Serializer for TurtleSerializer {
             ));
         }
 
-        po_lines.push(format!(
-            "dct:identifier \"{}\"",
-            escape_turtle_string(acc)
-        ));
+        po_lines.push(format!("dct:identifier \"{}\"", escape_turtle_string(acc)));
 
         if let Some(ref title) = record.title {
-            po_lines.push(format!(
-                "dra_ont:title \"{}\"",
-                escape_turtle_string(title)
-            ));
+            po_lines.push(format!("dra_ont:title \"{}\"", escape_turtle_string(title)));
         }
 
         if let Some(ref desc) = record.design_description {

@@ -1,6 +1,6 @@
+use flate2::read::GzDecoder;
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
-use flate2::read::GzDecoder;
 use std::io::Read;
 use tar::Archive;
 
@@ -20,15 +20,13 @@ pub fn parse_experiment_xml(xml_bytes: &[u8]) -> (Vec<SraExperimentRecord>, Vec<
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) if e.name().as_ref() == b"EXPERIMENT" => {
-                let offset = reader.buffer_position() as u64;
+                let offset = reader.buffer_position();
                 let accession = extract_attr(e, b"accession");
                 match accession {
-                    Some(acc) => {
-                        match parse_experiment_body(&mut reader, &mut buf, acc) {
-                            Ok(record) => records.push(record),
-                            Err(err) => errors.push(err),
-                        }
-                    }
+                    Some(acc) => match parse_experiment_body(&mut reader, &mut buf, acc) {
+                        Ok(record) => records.push(record),
+                        Err(err) => errors.push(err),
+                    },
                     None => {
                         errors.push(ConvertError::MissingAccession { offset });
                         skip_to_end(&mut reader, &mut buf, b"EXPERIMENT");
@@ -38,7 +36,7 @@ pub fn parse_experiment_xml(xml_bytes: &[u8]) -> (Vec<SraExperimentRecord>, Vec<
             Ok(Event::Eof) => break,
             Err(e) => {
                 errors.push(ConvertError::XmlParse {
-                    offset: reader.buffer_position() as u64,
+                    offset: reader.buffer_position(),
                     message: e.to_string(),
                 });
                 break;
@@ -83,19 +81,24 @@ fn parse_experiment_body(
                 let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
 
                 match tag.as_str() {
-                    "TITLE" | "DESIGN_DESCRIPTION" | "LIBRARY_NAME"
-                    | "LIBRARY_STRATEGY" | "LIBRARY_SOURCE" | "LIBRARY_SELECTION"
-                    | "LIBRARY_CONSTRUCTION_PROTOCOL" | "INSTRUMENT_MODEL" => {
+                    "TITLE"
+                    | "DESIGN_DESCRIPTION"
+                    | "LIBRARY_NAME"
+                    | "LIBRARY_STRATEGY"
+                    | "LIBRARY_SOURCE"
+                    | "LIBRARY_SELECTION"
+                    | "LIBRARY_CONSTRUCTION_PROTOCOL"
+                    | "INSTRUMENT_MODEL" => {
                         current_tag = Some(tag);
                     }
                     "PLATFORM" => {
                         in_platform = true;
                     }
                     "PAIRED" => {
-                        let length = extract_attr(e, b"NOMINAL_LENGTH")
-                            .and_then(|s| s.parse::<f64>().ok());
-                        let sdev = extract_attr(e, b"NOMINAL_SDEV")
-                            .and_then(|s| s.parse::<f64>().ok());
+                        let length =
+                            extract_attr(e, b"NOMINAL_LENGTH").and_then(|s| s.parse::<f64>().ok());
+                        let sdev =
+                            extract_attr(e, b"NOMINAL_SDEV").and_then(|s| s.parse::<f64>().ok());
                         rec.library_layout = Some(LibraryLayout::Paired {
                             nominal_length: length,
                             nominal_sdev: sdev,
@@ -105,9 +108,7 @@ fn parse_experiment_body(
                         rec.library_layout = Some(LibraryLayout::Single);
                     }
                     _ => {
-                        if in_platform && platform_tag.is_none()
-                            && tag != "INSTRUMENT_MODEL"
-                        {
+                        if in_platform && platform_tag.is_none() && tag != "INSTRUMENT_MODEL" {
                             platform_tag = Some(tag);
                         }
                     }
@@ -117,10 +118,10 @@ fn parse_experiment_body(
                 let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
                 match tag.as_str() {
                     "PAIRED" => {
-                        let length = extract_attr(e, b"NOMINAL_LENGTH")
-                            .and_then(|s| s.parse::<f64>().ok());
-                        let sdev = extract_attr(e, b"NOMINAL_SDEV")
-                            .and_then(|s| s.parse::<f64>().ok());
+                        let length =
+                            extract_attr(e, b"NOMINAL_LENGTH").and_then(|s| s.parse::<f64>().ok());
+                        let sdev =
+                            extract_attr(e, b"NOMINAL_SDEV").and_then(|s| s.parse::<f64>().ok());
                         rec.library_layout = Some(LibraryLayout::Paired {
                             nominal_length: length,
                             nominal_sdev: sdev,
@@ -133,9 +134,7 @@ fn parse_experiment_body(
                         // Self-closing <DESIGN_DESCRIPTION/> means empty
                     }
                     _ => {
-                        if in_platform && platform_tag.is_none()
-                            && tag != "INSTRUMENT_MODEL"
-                        {
+                        if in_platform && platform_tag.is_none() && tag != "INSTRUMENT_MODEL" {
                             platform_tag = Some(tag);
                         }
                     }
@@ -143,9 +142,10 @@ fn parse_experiment_body(
             }
             Ok(Event::Text(ref e)) => {
                 if let Some(ref tag) = current_tag {
-                    let text = e.unescape()
+                    let text = e
+                        .unescape()
                         .map_err(|err| ConvertError::XmlParse {
-                            offset: reader.buffer_position() as u64,
+                            offset: reader.buffer_position(),
                             message: err.to_string(),
                         })?
                         .to_string();
@@ -184,7 +184,7 @@ fn parse_experiment_body(
             Ok(Event::Eof) => break,
             Err(e) => {
                 return Err(ConvertError::XmlParse {
-                    offset: reader.buffer_position() as u64,
+                    offset: reader.buffer_position(),
                     message: e.to_string(),
                 });
             }
@@ -303,18 +303,27 @@ mod tests {
         let r = &records[0];
         assert_eq!(r.accession, "SRX000001");
         assert_eq!(r.title.as_deref(), Some("RNA-Seq of human brain tissue"));
-        assert_eq!(r.design_description.as_deref(), Some("Total RNA was extracted and sequenced."));
+        assert_eq!(
+            r.design_description.as_deref(),
+            Some("Total RNA was extracted and sequenced.")
+        );
         assert_eq!(r.library_name.as_deref(), Some("Brain RNA lib1"));
         assert_eq!(r.library_strategy.as_deref(), Some("RNA-Seq"));
         assert_eq!(r.library_source.as_deref(), Some("TRANSCRIPTOMIC"));
         assert_eq!(r.library_selection.as_deref(), Some("cDNA"));
-        assert_eq!(r.library_construction_protocol.as_deref(), Some("TruSeq RNA protocol"));
+        assert_eq!(
+            r.library_construction_protocol.as_deref(),
+            Some("TruSeq RNA protocol")
+        );
         assert_eq!(r.platform.as_deref(), Some("ILLUMINA"));
         assert_eq!(r.instrument_model.as_deref(), Some("Illumina NovaSeq 6000"));
-        assert_eq!(r.library_layout, Some(LibraryLayout::Paired {
-            nominal_length: Some(300.0),
-            nominal_sdev: Some(25.5),
-        }));
+        assert_eq!(
+            r.library_layout,
+            Some(LibraryLayout::Paired {
+                nominal_length: Some(300.0),
+                nominal_sdev: Some(25.5),
+            })
+        );
     }
 
     #[test]
@@ -352,10 +361,13 @@ mod tests {
     fn test_paired_without_attributes() {
         let (records, _) = parse_experiment_xml(&fixture_xml());
         let r = &records[2];
-        assert_eq!(r.library_layout, Some(LibraryLayout::Paired {
-            nominal_length: None,
-            nominal_sdev: None,
-        }));
+        assert_eq!(
+            r.library_layout,
+            Some(LibraryLayout::Paired {
+                nominal_length: None,
+                nominal_sdev: None,
+            })
+        );
     }
 
     #[test]

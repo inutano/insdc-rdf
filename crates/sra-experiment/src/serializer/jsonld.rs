@@ -48,9 +48,15 @@ impl TypedDecimal {
 struct LayoutNode {
     #[serde(rename = "@type")]
     r#type: String,
-    #[serde(rename = "dra_ont:nominalLength", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:nominalLength",
+        skip_serializing_if = "Option::is_none"
+    )]
     nominal_length: Option<TypedDecimal>,
-    #[serde(rename = "dra_ont:nominalSdev", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:nominalSdev",
+        skip_serializing_if = "Option::is_none"
+    )]
     nominal_sdev: Option<TypedDecimal>,
 }
 
@@ -58,17 +64,35 @@ struct LayoutNode {
 struct DesignNode {
     #[serde(rename = "@type")]
     r#type: &'static str,
-    #[serde(rename = "dra_ont:libraryName", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:libraryName",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_name: Option<String>,
-    #[serde(rename = "dra_ont:libraryStrategy", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:libraryStrategy",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_strategy: Option<IdRef>,
-    #[serde(rename = "dra_ont:librarySource", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:librarySource",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_source: Option<IdRef>,
-    #[serde(rename = "dra_ont:librarySelection", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:librarySelection",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_selection: Option<IdRef>,
-    #[serde(rename = "dra_ont:libraryConstructionProtocol", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:libraryConstructionProtocol",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_construction_protocol: Option<String>,
-    #[serde(rename = "dra_ont:libraryLayout", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:libraryLayout",
+        skip_serializing_if = "Option::is_none"
+    )]
     library_layout: Option<LayoutNode>,
 }
 
@@ -76,7 +100,10 @@ struct DesignNode {
 struct PlatformNode {
     #[serde(rename = "@type", skip_serializing_if = "Option::is_none")]
     r#type: Option<String>,
-    #[serde(rename = "dra_ont:instrumentModel", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:instrumentModel",
+        skip_serializing_if = "Option::is_none"
+    )]
     instrument_model: Option<IdRef>,
 }
 
@@ -94,7 +121,10 @@ struct JsonLdRecord {
     identifier: String,
     #[serde(rename = "dra_ont:title", skip_serializing_if = "Option::is_none")]
     title: Option<String>,
-    #[serde(rename = "dra_ont:designDescription", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dra_ont:designDescription",
+        skip_serializing_if = "Option::is_none"
+    )]
     design_description: Option<String>,
     #[serde(rename = "dra_ont:platform", skip_serializing_if = "Option::is_none")]
     platform: Option<PlatformNode>,
@@ -123,12 +153,9 @@ impl Serializer for JsonLdSerializer {
                     .platform
                     .as_ref()
                     .map(|p| format!("dra_ont:{}", to_uri_local(p))),
-                instrument_model: record
-                    .instrument_model
-                    .as_ref()
-                    .map(|im| IdRef {
-                        id: format!("dra_ont:{}", to_uri_local(im)),
-                    }),
+                instrument_model: record.instrument_model.as_ref().map(|im| IdRef {
+                    id: format!("dra_ont:{}", to_uri_local(im)),
+                }),
             })
         } else {
             None
@@ -162,24 +189,15 @@ impl Serializer for JsonLdSerializer {
             Some(DesignNode {
                 r#type: "dra_ont:ExperimentDesign",
                 library_name: record.library_name.clone(),
-                library_strategy: record
-                    .library_strategy
-                    .as_ref()
-                    .map(|s| IdRef {
-                        id: format!("dra_ont:{}", to_uri_local(s)),
-                    }),
-                library_source: record
-                    .library_source
-                    .as_ref()
-                    .map(|s| IdRef {
-                        id: format!("dra_ont:{}", to_uri_local(s)),
-                    }),
-                library_selection: record
-                    .library_selection
-                    .as_ref()
-                    .map(|s| IdRef {
-                        id: format!("dra_ont:{}", to_uri_local(s)),
-                    }),
+                library_strategy: record.library_strategy.as_ref().map(|s| IdRef {
+                    id: format!("dra_ont:{}", to_uri_local(s)),
+                }),
+                library_source: record.library_source.as_ref().map(|s| IdRef {
+                    id: format!("dra_ont:{}", to_uri_local(s)),
+                }),
+                library_selection: record.library_selection.as_ref().map(|s| IdRef {
+                    id: format!("dra_ont:{}", to_uri_local(s)),
+                }),
                 library_construction_protocol: record.library_construction_protocol.clone(),
                 library_layout,
             })
@@ -187,9 +205,10 @@ impl Serializer for JsonLdSerializer {
             None
         };
 
-        let label = record.title.as_ref().map(|t| {
-            format!("{}: {}", record.accession, t)
-        });
+        let label = record
+            .title
+            .as_ref()
+            .map(|t| format!("{}: {}", record.accession, t));
 
         let obj = JsonLdRecord {
             context: &CONTEXT,
@@ -293,10 +312,7 @@ mod tests {
         assert!(parsed.is_array());
         let first = &parsed[0];
         assert_eq!(first["@type"], "dra_ont:Experiment");
-        assert_eq!(
-            first["@id"],
-            "http://identifiers.org/insdc.sra/SRX000001"
-        );
+        assert_eq!(first["@id"], "http://identifiers.org/insdc.sra/SRX000001");
         assert_eq!(first["dct:identifier"], "SRX000001");
         assert_eq!(
             first["rdfs:label"],
@@ -311,10 +327,7 @@ mod tests {
         let design = &parsed[0]["dra_ont:design"];
         assert_eq!(design["@type"], "dra_ont:ExperimentDesign");
         assert_eq!(design["dra_ont:libraryName"], "Brain RNA lib1");
-        assert_eq!(
-            design["dra_ont:libraryStrategy"]["@id"],
-            "dra_ont:RNA-Seq"
-        );
+        assert_eq!(design["dra_ont:libraryStrategy"]["@id"], "dra_ont:RNA-Seq");
         assert_eq!(
             design["dra_ont:librarySource"]["@id"],
             "dra_ont:TRANSCRIPTOMIC"
@@ -352,9 +365,18 @@ mod tests {
         assert_eq!(first["@type"], "dra_ont:Experiment");
         assert_eq!(first["dct:identifier"], "SRX999999");
         // Optional fields should be absent (null in JSON Value access)
-        assert!(first.get("dra_ont:platform").is_none(), "platform should be absent");
-        assert!(first.get("dra_ont:design").is_none(), "design should be absent");
-        assert!(first.get("dra_ont:title").is_none(), "title should be absent");
+        assert!(
+            first.get("dra_ont:platform").is_none(),
+            "platform should be absent"
+        );
+        assert!(
+            first.get("dra_ont:design").is_none(),
+            "design should be absent"
+        );
+        assert!(
+            first.get("dra_ont:title").is_none(),
+            "title should be absent"
+        );
         assert!(
             first.get("dra_ont:designDescription").is_none(),
             "designDescription should be absent"
