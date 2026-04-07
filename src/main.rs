@@ -42,6 +42,7 @@ enum SourceType {
     Biosample,
     Sra,
     Bioproject,
+    SraExperiment,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -60,6 +61,9 @@ fn main() -> anyhow::Result<()> {
             SourceType::Sra => insdc_rdf_sra::run_convert(&input, &output_dir, chunk_size),
             SourceType::Bioproject => {
                 insdc_rdf_bioproject::run_convert(&input, &output_dir, chunk_size)
+            }
+            SourceType::SraExperiment => {
+                insdc_rdf_sra_experiment::run_convert(&input, &output_dir, chunk_size)
             }
         },
         Commands::Validate { path } => {

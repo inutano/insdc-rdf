@@ -1,0 +1,1 @@
+// SRA experiment metadata model
