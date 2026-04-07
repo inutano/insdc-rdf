@@ -1,0 +1,8 @@
+# Ignore everything
+**
+
+!build.rs
+!Cargo.lock
+!Cargo.toml
+!crates
+!src
