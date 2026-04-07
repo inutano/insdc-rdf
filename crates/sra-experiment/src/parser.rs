@@ -222,59 +222,35 @@ fn skip_to_end(reader: &mut Reader<&[u8]>, buf: &mut Vec<u8>, tag: &[u8]) {
     }
 }
 
-/// Streaming parser that reads a tar.gz archive and yields experiment records.
-pub struct SraExperimentParser {
-    entries: Vec<(String, Vec<u8>)>,
-    entry_index: usize,
-    current_records: Vec<SraExperimentRecord>,
-    record_index: usize,
-}
+/// Process a tar.gz archive, yielding experiment records and errors through a callback.
+/// Reads one tar entry at a time — memory usage is proportional to the largest single
+/// experiment XML file, not the entire archive.
+pub fn process_tar_gz<R: Read>(
+    reader: R,
+    mut on_result: impl FnMut(Result<SraExperimentRecord, ConvertError>),
+) -> std::io::Result<()> {
+    let gz = GzDecoder::new(reader);
+    let mut archive = Archive::new(gz);
 
-impl SraExperimentParser {
-    pub fn from_tar_gz<R: Read>(reader: R) -> std::io::Result<Self> {
-        let gz = GzDecoder::new(reader);
-        let mut archive = Archive::new(gz);
+    for entry_result in archive.entries()? {
+        let mut entry = entry_result?;
+        let path = entry.path()?.to_string_lossy().to_string();
 
-        let mut entries = Vec::new();
-        for entry_result in archive.entries()? {
-            let mut entry = entry_result?;
-            let path = entry.path()?.to_string_lossy().to_string();
+        if path.ends_with(".experiment.xml") {
+            let mut bytes = Vec::new();
+            entry.read_to_end(&mut bytes)?;
 
-            if path.ends_with(".experiment.xml") {
-                let mut bytes = Vec::new();
-                entry.read_to_end(&mut bytes)?;
-                entries.push((path, bytes));
+            let (records, errors) = parse_experiment_xml(&bytes);
+            for error in errors {
+                on_result(Err(error));
+            }
+            for record in records {
+                on_result(Ok(record));
             }
         }
-
-        Ok(SraExperimentParser {
-            entries,
-            entry_index: 0,
-            current_records: Vec::new(),
-            record_index: 0,
-        })
     }
 
-    pub fn next_record(&mut self) -> Result<Option<SraExperimentRecord>, ConvertError> {
-        loop {
-            if self.record_index < self.current_records.len() {
-                let record = self.current_records[self.record_index].clone();
-                self.record_index += 1;
-                return Ok(Some(record));
-            }
-
-            if self.entry_index >= self.entries.len() {
-                return Ok(None);
-            }
-
-            let (_path, ref xml_bytes) = &self.entries[self.entry_index];
-            self.entry_index += 1;
-
-            let (records, _errors) = parse_experiment_xml(xml_bytes);
-            self.current_records = records;
-            self.record_index = 0;
-        }
-    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -416,12 +392,13 @@ mod tests {
         ]);
 
         let cursor = std::io::Cursor::new(tar_bytes);
-        let mut parser = SraExperimentParser::from_tar_gz(cursor).unwrap();
-
         let mut records = Vec::new();
-        while let Ok(Some(rec)) = parser.next_record() {
-            records.push(rec);
-        }
+        process_tar_gz(cursor, |result| {
+            if let Ok(rec) = result {
+                records.push(rec);
+            }
+        })
+        .unwrap();
 
         assert_eq!(records.len(), 3);
         assert_eq!(records[0].accession, "SRX000001");
@@ -437,8 +414,9 @@ mod tests {
         ]);
 
         let cursor = std::io::Cursor::new(tar_bytes);
-        let mut parser = SraExperimentParser::from_tar_gz(cursor).unwrap();
-        assert!(parser.next_record().unwrap().is_none());
+        let mut count = 0;
+        process_tar_gz(cursor, |_| count += 1).unwrap();
+        assert_eq!(count, 0);
     }
 
     #[test]
@@ -465,15 +443,49 @@ mod tests {
         ]);
 
         let cursor = std::io::Cursor::new(tar_bytes);
-        let mut parser = SraExperimentParser::from_tar_gz(cursor).unwrap();
-
         let mut records = Vec::new();
-        while let Ok(Some(rec)) = parser.next_record() {
-            records.push(rec);
-        }
+        process_tar_gz(cursor, |result| {
+            if let Ok(rec) = result {
+                records.push(rec);
+            }
+        })
+        .unwrap();
 
         assert_eq!(records.len(), 2);
         assert_eq!(records[0].accession, "SRX100001");
         assert_eq!(records[1].accession, "ERX200001");
+    }
+
+    #[test]
+    fn test_tar_gz_propagates_errors() {
+        // XML with one valid experiment and one missing accession
+        let xml = br#"<?xml version="1.0"?>
+<EXPERIMENT_SET>
+  <EXPERIMENT accession="SRX000001">
+    <DESIGN><LIBRARY_DESCRIPTOR>
+      <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY><LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+      <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION><LIBRARY_LAYOUT><SINGLE/></LIBRARY_LAYOUT>
+    </LIBRARY_DESCRIPTOR></DESIGN><PLATFORM><ILLUMINA><INSTRUMENT_MODEL>HiSeq</INSTRUMENT_MODEL></ILLUMINA></PLATFORM>
+  </EXPERIMENT>
+  <EXPERIMENT>
+    <TITLE>No accession</TITLE>
+  </EXPERIMENT>
+</EXPERIMENT_SET>"#;
+
+        let tar_bytes = build_tar_gz(&[("SRA000001/SRA000001.experiment.xml", xml.as_slice())]);
+
+        let cursor = std::io::Cursor::new(tar_bytes);
+        let mut records = Vec::new();
+        let mut errors = Vec::new();
+        process_tar_gz(cursor, |result| match result {
+            Ok(rec) => records.push(rec),
+            Err(e) => errors.push(e),
+        })
+        .unwrap();
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].accession, "SRX000001");
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].to_string().contains("missing accession"));
     }
 }

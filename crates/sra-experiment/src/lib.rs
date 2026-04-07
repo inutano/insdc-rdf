@@ -11,7 +11,6 @@ use md5::Digest;
 
 use chunk::ChunkWriter;
 use insdc_rdf_core::progress::Progress;
-use parser::SraExperimentParser;
 
 pub fn run_convert(input: &Path, output_dir: &Path, chunk_size: usize) -> anyhow::Result<()> {
     fs::create_dir_all(output_dir)?;
@@ -37,27 +36,36 @@ pub fn run_convert(input: &Path, output_dir: &Path, chunk_size: usize) -> anyhow
     let mut chunk_writer = ChunkWriter::new(output_dir, chunk_size, progress)?;
 
     let file = File::open(input)?;
-    let mut parser = SraExperimentParser::from_tar_gz(file)?;
 
     let mut records_processed: u64 = 0;
     let mut records_skipped: u64 = 0;
+    let mut io_error: Option<std::io::Error> = None;
 
-    loop {
-        match parser.next_record() {
-            Ok(Some(record)) => {
-                chunk_writer.add_record(record)?;
+    parser::process_tar_gz(file, |result| {
+        if io_error.is_some() {
+            return; // Stop processing if we had an I/O error
+        }
+        match result {
+            Ok(record) => {
+                if let Err(e) = chunk_writer.add_record(record) {
+                    io_error = Some(e);
+                    return;
+                }
                 records_processed += 1;
                 if records_processed.is_multiple_of(1_000_000) {
                     eprintln!("  Progress: {} records processed", records_processed);
                 }
             }
-            Ok(None) => break,
             Err(e) => {
-                writeln!(error_log, "{}", e)?;
+                let _ = writeln!(error_log, "{}", e);
                 chunk_writer.record_skip();
                 records_skipped += 1;
             }
         }
+    })?;
+
+    if let Some(e) = io_error {
+        return Err(e.into());
     }
 
     chunk_writer.finish()?;
