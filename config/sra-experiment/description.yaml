@@ -1,0 +1,3 @@
+dataset:
+  name: SRA Experiment Metadata RDF
+  description: Descriptive experiment-level metadata extracted from SRA experiment XML (platform, instrument, library design)

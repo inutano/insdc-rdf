@@ -85,6 +85,9 @@ curl -O https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
 
 # BioProject (~3.7 GB)
 curl -O https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml
+
+# SRA Experiment metadata (~15 GB, monthly Full dump)
+curl -O https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260316.tar.gz
 ```
 
 ## RDF schemas
@@ -139,15 +142,46 @@ idorg_bp:PRJNA3
   dct:issued "2001-01-09T00:00:00Z"^^xsd:dateTime .
 ```
 
+### SRA Experiment
+
+<a href="config/sra-experiment/schema.svg"><img src="config/sra-experiment/schema.svg" alt="SRA Experiment schema" width="750"></a>
+
+```turtle
+insdc_sra:SRX000001
+  a dra_ont:Experiment ;
+  rdfs:label "SRX000001: RNA-Seq of human brain tissue" ;
+  dct:identifier "SRX000001" ;
+  dra_ont:title "RNA-Seq of human brain tissue" ;
+  dra_ont:designDescription "Total RNA was extracted and sequenced." ;
+  dra_ont:platform [
+    a dra_ont:ILLUMINA ;
+    dra_ont:instrumentModel dra_ont:Illumina_NovaSeq_6000
+  ] ;
+  dra_ont:design [
+    a dra_ont:ExperimentDesign ;
+    dra_ont:libraryName "Brain RNA lib1" ;
+    dra_ont:libraryStrategy dra_ont:RNA-Seq ;
+    dra_ont:librarySource dra_ont:TRANSCRIPTOMIC ;
+    dra_ont:librarySelection dra_ont:cDNA ;
+    dra_ont:libraryConstructionProtocol "TruSeq RNA protocol" ;
+    dra_ont:libraryLayout [
+      a dra_ont:PAIRED ;
+      dra_ont:nominalLength "300"^^xsd:decimal ;
+      dra_ont:nominalSdev "25.5"^^xsd:decimal
+    ]
+  ] .
+```
+
 ## rdf-config & ShEx
 
 Schema definitions using [rdf-config](https://github.com/dbcls/rdf-config) are in `config/`:
 
 ```
 config/
-  biosample/   model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
-  sra/         model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
-  bioproject/  model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
+  biosample/       model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
+  sra/             model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
+  bioproject/      model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
+  sra-experiment/  model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
 ```
 
 Generate ShEx validation schemas:
@@ -157,6 +191,7 @@ Generate ShEx validation schemas:
 bundle exec rdf-config --config config/biosample --shex
 bundle exec rdf-config --config config/sra --shex
 bundle exec rdf-config --config config/bioproject --shex
+bundle exec rdf-config --config config/sra-experiment --shex
 ```
 
 ## Benchmark
