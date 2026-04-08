@@ -1,0 +1,35 @@
+- SRAExperiment insdc_sra:SRX000001:
+  - a: dra_ont:Experiment
+  - dct:identifier:
+    - experiment_id: "SRX000001"
+  - rdfs:label?:
+    - experiment_label: "SRX000001: RNA-Seq of human brain tissue"
+  - dra_ont:title?:
+    - experiment_title: "RNA-Seq of human brain tissue"
+  - dra_ont:designDescription?:
+    - design_description: "Total RNA was extracted and sequenced."
+  - dra_ont:platform?:
+    - []:
+      - a: dra_ont:ILLUMINA
+      - dra_ont:instrumentModel?:
+        - instrument_model: dra_ont:Illumina_NovaSeq_6000
+  - dra_ont:design?:
+    - []:
+      - a: dra_ont:ExperimentDesign
+      - dra_ont:libraryName?:
+        - library_name: "Brain RNA lib1"
+      - dra_ont:libraryStrategy?:
+        - library_strategy: dra_ont:RNA-Seq
+      - dra_ont:librarySource?:
+        - library_source: dra_ont:TRANSCRIPTOMIC
+      - dra_ont:librarySelection?:
+        - library_selection: dra_ont:cDNA
+      - dra_ont:libraryConstructionProtocol?:
+        - library_construction_protocol: "TruSeq RNA protocol"
+      - dra_ont:libraryLayout?:
+        - []:
+          - a: dra_ont:PAIRED
+          - dra_ont:nominalLength?:
+            - nominal_length: 300
+          - dra_ont:nominalSdev?:
+            - nominal_sdev: 25.5

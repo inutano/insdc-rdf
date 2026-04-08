@@ -1,0 +1,11 @@
+experiment_metadata:
+  description: Get descriptive metadata for an experiment accession
+  variables: [SRAExperiment, experiment_id, experiment_title, design_description, library_name, library_strategy, library_source, library_selection, instrument_model]
+
+experiments_by_platform:
+  description: List experiments by platform vendor
+  variables: [SRAExperiment, experiment_id, instrument_model]
+
+experiments_by_strategy:
+  description: List experiments by library strategy
+  variables: [SRAExperiment, experiment_id, library_strategy]

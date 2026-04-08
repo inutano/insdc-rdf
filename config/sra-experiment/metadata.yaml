@@ -1,0 +1,12 @@
+title: SRA Experiment Metadata RDF
+website: https://ddbj.nig.ac.jp/
+description: Descriptive metadata (platform, instrument, library strategy/source/selection/layout, title, design description) for SRA experiments
+tags: [SRA, INSDC, experiment, sequencing]
+provider: Bioinformation and DDBJ Center
+creators:
+  - name: Tazro Ohta
+    affiliation: Database Center for Life Science
+version: "0.2.0"
+issued: 2026-04-08
+licenses:
+  - Attribution 4.0 International (CC BY 4.0)
