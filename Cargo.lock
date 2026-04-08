@@ -354,7 +354,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -369,7 +369,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf-bioproject"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf-biosample"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -411,7 +411,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf-sra"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -424,7 +424,7 @@ dependencies = [
 
 [[package]]
 name = "insdc-rdf-sra-experiment"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",

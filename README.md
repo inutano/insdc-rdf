@@ -1,21 +1,23 @@
 # insdc-rdf
 
-Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Streams full NCBI data dumps through single-pass chunked pipelines, producing **Turtle**, **JSON-LD**, and **N-Triples** output for three data sources:
+Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Streams full NCBI data dumps through single-pass chunked pipelines, producing **Turtle**, **JSON-LD**, and **N-Triples** output for four data sources:
 
 - **BioSample** — sample metadata from `biosample_set.xml.gz`
 - **SRA** — accession cross-links from `SRA_Accessions.tab`
 - **BioProject** — project metadata from `bioproject.xml`
+- **SRA Experiment** — experiment-level metadata (platform, library info) from `NCBI_SRA_Metadata_Full_*.tar.gz`
 
 ### Summary
 
-insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 183 million records across three sources in under 90 minutes, producing 4.4 billion RDF triples.
+insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 222 million records across four sources in under two hours.
 
 | | Records | Triples | Conversion time |
 |---|---|---|---|
 | BioSample | 53.3M | ~2.9B | 55 min |
 | SRA | 129.1M | ~1.1B | 29 min |
 | BioProject | 823K | ~4.3M | 20 sec |
-| **Total** | **183.3M** | **4.4B** | **~85 min** |
+| SRA Experiment | 38.9M | ~0.4B | 24 min |
+| **Total** | **222.1M** | **~4.8B** | **~108 min** |
 
 The output has been validated by loading all 4.4 billion triples into [QLever](https://github.com/ad-freiburg/qlever) and [Oxigraph](https://github.com/oxigraph/oxigraph), with SPARQL queries confirming all record counts match and spot checks returning correct data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
 
@@ -36,13 +38,16 @@ insdc-rdf convert --source sra --input SRA_Accessions.tab --output-dir output/sr
 
 # BioProject (XML)
 insdc-rdf convert --source bioproject --input bioproject.xml --output-dir output/bioproject
+
+# SRA Experiment metadata (tar.gz of per-submission XML files)
+insdc-rdf convert --source sra-experiment --input NCBI_SRA_Metadata_Full_20260316.tar.gz --output-dir output/sra-experiment
 ```
 
 Options:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-s, --source` | `biosample` | Data source: `biosample`, `sra`, `bioproject` |
+| `-s, --source` | `biosample` | Data source: `biosample`, `sra`, `bioproject`, `sra-experiment` |
 | `-i, --input` | (required) | Path to input file |
 | `-o, --output-dir` | `./output` | Output directory |
 | `-c, --chunk-size` | `100000` | Records per output chunk |
@@ -156,15 +161,18 @@ bundle exec rdf-config --config config/bioproject --shex
 
 ## Benchmark
 
-Full NCBI dumps (2026-04-01/02):
+Full NCBI dumps (2026-04-01/02 for BioSample/SRA/BioProject, 2026-03-16 for SRA Experiment):
 
-| Source | Input | Records | Skipped | Output | Time | Throughput |
-|--------|-------|---------|---------|--------|------|------------|
-| BioSample | 4.0 GB (gzip) | 53,342,722 | 0 | 785 GB | 55 min | 16.2k rec/s |
-| SRA | 30 GB (TSV) | 129,100,540 | 0 | 284 GB | 29 min | 74k rec/s |
-| BioProject | 3.7 GB (XML) | 823,572 | 1 | 1.3 GB | 20 sec | 41k rec/s |
+| Source | Input | Records | Skipped | Output | Time | Throughput | Peak RSS |
+|--------|-------|---------|---------|--------|------|------------|----------|
+| BioSample | 4.0 GB (gzip) | 53,342,722 | 0 | 785 GB | 55 min | 16.2k rec/s | — |
+| SRA | 30 GB (TSV) | 129,100,540 | 0 | 284 GB | 29 min | 74k rec/s | — |
+| BioProject | 3.7 GB (XML) | 823,572 | 1 | 1.3 GB | 20 sec | 41k rec/s | — |
+| SRA Experiment | 15.1 GB (tar.gz) | 38,851,043 | 0 | 161 GB | 24 min | 26.9k rec/s | 3.5 MB |
 
 Local workstation: Intel Xeon w5-3435X, 128 GB RAM, NVMe/HDD storage.
+
+The SRA Experiment converter streams the tar.gz archive one entry at a time — RSS stays flat at ~3.5 MB regardless of input size.
 
 NIG supercomputer (EPYC 9654, Lustre): ~0.72x local throughput for BioSample (Lustre I/O bound).
 
