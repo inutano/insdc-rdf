@@ -41,7 +41,7 @@ pub fn run_convert(input: &Path, output_dir: &Path, chunk_size: usize) -> anyhow
     let mut records_skipped: u64 = 0;
     let mut io_error: Option<std::io::Error> = None;
 
-    parser::process_tar_gz(file, |result| {
+    parser::process_tar_archive(file, |result| {
         if io_error.is_some() {
             return; // Stop processing if we had an I/O error
         }
@@ -91,43 +91,47 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
 
-    fn build_test_tar_gz() -> Vec<u8> {
-        use flate2::write::GzEncoder;
-        use flate2::Compression;
-
-        let xml = std::fs::read(concat!(
+    fn fixture_experiment_xml() -> Vec<u8> {
+        std::fs::read(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../tests/fixtures/experiment_sample.xml"
         ))
-        .unwrap();
+        .unwrap()
+    }
 
-        let gz_buf = Vec::new();
-        let enc = GzEncoder::new(gz_buf, Compression::default());
-        let mut builder = tar::Builder::new(enc);
-
+    fn append_fixture<W: std::io::Write>(builder: &mut tar::Builder<W>, xml: &[u8]) {
         let mut header = tar::Header::new_gnu();
         header.set_size(xml.len() as u64);
         header.set_mode(0o644);
         header.set_cksum();
         builder
-            .append_data(
-                &mut header,
-                "SRA000001/SRA000001.experiment.xml",
-                xml.as_slice(),
-            )
+            .append_data(&mut header, "SRA000001/SRA000001.experiment.xml", xml)
             .unwrap();
+    }
 
+    fn build_test_tar_gz() -> Vec<u8> {
+        use flate2::write::GzEncoder;
+        use flate2::Compression;
+
+        let xml = fixture_experiment_xml();
+        let enc = GzEncoder::new(Vec::new(), Compression::default());
+        let mut builder = tar::Builder::new(enc);
+        append_fixture(&mut builder, &xml);
         let enc = builder.into_inner().unwrap();
         enc.finish().unwrap()
     }
 
-    #[test]
-    fn test_end_to_end() {
-        let tar_gz = build_test_tar_gz();
+    fn build_test_plain_tar() -> Vec<u8> {
+        let xml = fixture_experiment_xml();
+        let mut builder = tar::Builder::new(Vec::new());
+        append_fixture(&mut builder, &xml);
+        builder.into_inner().unwrap()
+    }
 
+    fn assert_end_to_end(archive_bytes: &[u8], filename: &str) {
         let dir = tempdir().unwrap();
-        let input_path = dir.path().join("test.tar.gz");
-        std::fs::write(&input_path, &tar_gz).unwrap();
+        let input_path = dir.path().join(filename);
+        std::fs::write(&input_path, archive_bytes).unwrap();
 
         let output_dir = dir.path().join("output");
         run_convert(&input_path, &output_dir, 100).unwrap();
@@ -167,5 +171,15 @@ mod tests {
         for line in nt.lines() {
             assert!(line.ends_with(" ."), "NT line: {:?}", line);
         }
+    }
+
+    #[test]
+    fn test_end_to_end_tar_gz() {
+        assert_end_to_end(&build_test_tar_gz(), "test.tar.gz");
+    }
+
+    #[test]
+    fn test_end_to_end_plain_tar() {
+        assert_end_to_end(&build_test_plain_tar(), "test.tar");
     }
 }

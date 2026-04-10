@@ -5,7 +5,7 @@ Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Stream
 - **BioSample** — sample metadata from `biosample_set.xml.gz`
 - **SRA** — accession cross-links from `SRA_Accessions.tab`
 - **BioProject** — project metadata from `bioproject.xml`
-- **SRA Experiment** — experiment-level metadata (platform, library info) from `NCBI_SRA_Metadata_Full_*.tar.gz`
+- **SRA Experiment** — experiment-level metadata (platform, library info) from `NCBI_SRA_Metadata_Full_*.tar[.gz]`
 
 ### Summary
 
@@ -39,7 +39,7 @@ insdc-rdf convert --source sra --input SRA_Accessions.tab --output-dir output/sr
 # BioProject (XML)
 insdc-rdf convert --source bioproject --input bioproject.xml --output-dir output/bioproject
 
-# SRA Experiment metadata (tar.gz of per-submission XML files)
+# SRA Experiment metadata (tar or tar.gz of per-submission XML files; format auto-detected)
 insdc-rdf convert --source sra-experiment --input NCBI_SRA_Metadata_Full_20260316.tar.gz --output-dir output/sra-experiment
 ```
 
@@ -207,7 +207,7 @@ Full NCBI dumps (2026-04-01/02 for BioSample/SRA/BioProject, 2026-03-16 for SRA 
 
 Local workstation: Intel Xeon w5-3435X, 128 GB RAM, NVMe/HDD storage.
 
-The SRA Experiment converter streams the tar.gz archive one entry at a time — RSS stays flat at ~3.5 MB regardless of input size.
+The SRA Experiment converter accepts both the gzipped tar (`.tar.gz`) and the uncompressed tar (`.tar`) form — the input is auto-detected by the gzip magic bytes. Either way the archive is streamed one entry at a time, so RSS stays flat at ~3.5 MB regardless of input size.
 
 NIG supercomputer (EPYC 9654, Lustre): ~0.72x local throughput for BioSample (Lustre I/O bound).
 
