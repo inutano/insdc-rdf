@@ -1,8 +1,10 @@
 use flate2::read::GzDecoder;
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
-use std::io::Read;
+use std::io::{Cursor, Read};
 use tar::Archive;
+
+const GZIP_MAGIC: [u8; 2] = [0x1f, 0x8b];
 
 use crate::model::{LibraryLayout, SraExperimentRecord};
 use insdc_rdf_core::error::ConvertError;
@@ -222,16 +224,45 @@ fn skip_to_end(reader: &mut Reader<&[u8]>, buf: &mut Vec<u8>, tag: &[u8]) {
     }
 }
 
-/// Process a tar.gz archive, yielding experiment records and errors through a callback.
-/// Reads one tar entry at a time — memory usage is proportional to the largest single
-/// experiment XML file, not the entire archive.
-pub fn process_tar_gz<R: Read>(
-    reader: R,
+/// Process a tar archive (optionally gzip-compressed), yielding experiment records
+/// and errors through a callback. The stream is auto-detected by reading the first
+/// two bytes: if they are the gzip magic `1f 8b`, the input is piped through
+/// `flate2::GzDecoder`; otherwise it is treated as an uncompressed tar archive.
+///
+/// Reads one tar entry at a time — memory usage is proportional to the largest
+/// single experiment XML file, not the entire archive.
+pub fn process_tar_archive<R: Read>(
+    mut reader: R,
+    on_result: impl FnMut(Result<SraExperimentRecord, ConvertError>),
+) -> std::io::Result<()> {
+    let mut prefix = [0u8; 2];
+    let mut filled = 0;
+    while filled < prefix.len() {
+        let n = reader.read(&mut prefix[filled..])?;
+        if n == 0 {
+            break;
+        }
+        filled += n;
+    }
+    let is_gzipped = filled == prefix.len() && prefix == GZIP_MAGIC;
+
+    // Replay the bytes we peeked in front of the rest of the stream so that
+    // downstream readers see the original byte sequence.
+    let replay = Cursor::new(prefix[..filled].to_vec());
+    let stream = replay.chain(reader);
+
+    if is_gzipped {
+        let gz = GzDecoder::new(stream);
+        process_tar_entries(Archive::new(gz), on_result)
+    } else {
+        process_tar_entries(Archive::new(stream), on_result)
+    }
+}
+
+fn process_tar_entries<R: Read>(
+    mut archive: Archive<R>,
     mut on_result: impl FnMut(Result<SraExperimentRecord, ConvertError>),
 ) -> std::io::Result<()> {
-    let gz = GzDecoder::new(reader);
-    let mut archive = Archive::new(gz);
-
     for entry_result in archive.entries()? {
         let mut entry = entry_result?;
         let path = entry.path()?.to_string_lossy().to_string();
@@ -393,7 +424,7 @@ mod tests {
 
         let cursor = std::io::Cursor::new(tar_bytes);
         let mut records = Vec::new();
-        process_tar_gz(cursor, |result| {
+        process_tar_archive(cursor, |result| {
             if let Ok(rec) = result {
                 records.push(rec);
             }
@@ -415,7 +446,7 @@ mod tests {
 
         let cursor = std::io::Cursor::new(tar_bytes);
         let mut count = 0;
-        process_tar_gz(cursor, |_| count += 1).unwrap();
+        process_tar_archive(cursor, |_| count += 1).unwrap();
         assert_eq!(count, 0);
     }
 
@@ -444,7 +475,7 @@ mod tests {
 
         let cursor = std::io::Cursor::new(tar_bytes);
         let mut records = Vec::new();
-        process_tar_gz(cursor, |result| {
+        process_tar_archive(cursor, |result| {
             if let Ok(rec) = result {
                 records.push(rec);
             }
@@ -477,7 +508,7 @@ mod tests {
         let cursor = std::io::Cursor::new(tar_bytes);
         let mut records = Vec::new();
         let mut errors = Vec::new();
-        process_tar_gz(cursor, |result| match result {
+        process_tar_archive(cursor, |result| match result {
             Ok(rec) => records.push(rec),
             Err(e) => errors.push(e),
         })
@@ -487,5 +518,101 @@ mod tests {
         assert_eq!(records[0].accession, "SRX000001");
         assert_eq!(errors.len(), 1);
         assert!(errors[0].to_string().contains("missing accession"));
+    }
+
+    // --- Plain tar tests ---
+
+    fn build_plain_tar(files: &[(&str, &[u8])]) -> Vec<u8> {
+        let mut builder = tar::Builder::new(Vec::new());
+
+        for (path, data) in files {
+            let mut header = tar::Header::new_gnu();
+            header.set_size(data.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            builder.append_data(&mut header, path, *data).unwrap();
+        }
+
+        builder.into_inner().unwrap()
+    }
+
+    #[test]
+    fn test_plain_tar_parser() {
+        let xml = fixture_xml();
+        let tar_bytes = build_plain_tar(&[
+            ("SRA000001/SRA000001.experiment.xml", &xml),
+            ("SRA000001/SRA000001.run.xml", b"<RUN_SET/>"),
+            ("SRA000002/SRA000002.submission.xml", b"<SUBMISSION/>"),
+        ]);
+
+        // Sanity check: a plain tar must not start with the gzip magic so
+        // the auto-detection actually exercises the non-gzipped branch.
+        assert_ne!(&tar_bytes[..2], &GZIP_MAGIC);
+
+        let cursor = std::io::Cursor::new(tar_bytes);
+        let mut records = Vec::new();
+        process_tar_archive(cursor, |result| {
+            if let Ok(rec) = result {
+                records.push(rec);
+            }
+        })
+        .unwrap();
+
+        assert_eq!(records.len(), 3);
+        assert_eq!(records[0].accession, "SRX000001");
+        assert_eq!(records[1].accession, "DRX000002");
+        assert_eq!(records[2].accession, "ERX000003");
+    }
+
+    #[test]
+    fn test_plain_tar_propagates_errors() {
+        let xml = br#"<?xml version="1.0"?>
+<EXPERIMENT_SET>
+  <EXPERIMENT accession="SRX000001">
+    <DESIGN><LIBRARY_DESCRIPTOR>
+      <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY><LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+      <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION><LIBRARY_LAYOUT><SINGLE/></LIBRARY_LAYOUT>
+    </LIBRARY_DESCRIPTOR></DESIGN><PLATFORM><ILLUMINA><INSTRUMENT_MODEL>HiSeq</INSTRUMENT_MODEL></ILLUMINA></PLATFORM>
+  </EXPERIMENT>
+  <EXPERIMENT>
+    <TITLE>No accession</TITLE>
+  </EXPERIMENT>
+</EXPERIMENT_SET>"#;
+
+        let tar_bytes = build_plain_tar(&[("SRA000001/SRA000001.experiment.xml", xml.as_slice())]);
+
+        let cursor = std::io::Cursor::new(tar_bytes);
+        let mut records = Vec::new();
+        let mut errors = Vec::new();
+        process_tar_archive(cursor, |result| match result {
+            Ok(rec) => records.push(rec),
+            Err(e) => errors.push(e),
+        })
+        .unwrap();
+
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].accession, "SRX000001");
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].to_string().contains("missing accession"));
+    }
+
+    #[test]
+    fn test_corrupt_gzip_returns_error() {
+        // Starts with the gzip magic but the rest is garbage — GzDecoder
+        // must surface an I/O error rather than silently producing no records.
+        let mut bytes = vec![GZIP_MAGIC[0], GZIP_MAGIC[1]];
+        bytes.extend_from_slice(b"not actually gzip data");
+
+        let cursor = std::io::Cursor::new(bytes);
+        let result = process_tar_archive(cursor, |_| {});
+        assert!(result.is_err(), "expected error for corrupt gzip input");
+    }
+
+    #[test]
+    fn test_short_input_below_magic_does_not_panic() {
+        // Single-byte input: magic peek falls back to the plain-tar branch.
+        // tar::Archive may or may not error while iterating, but we must not panic.
+        let cursor = std::io::Cursor::new(vec![0x1fu8]);
+        let _ = process_tar_archive(cursor, |_| {});
     }
 }
