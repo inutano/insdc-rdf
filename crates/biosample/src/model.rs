@@ -6,6 +6,8 @@ pub struct BioSampleRecord {
     pub last_update: Option<String>,
     pub publication_date: Option<String>,
     pub title: Option<String>,
+    pub taxonomy_id: Option<String>,
+    pub taxonomy_name: Option<String>,
     pub attributes: Vec<Attribute>,
 }
 
@@ -81,6 +83,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: None,
+            taxonomy_id: None,
+            taxonomy_name: None,
             attributes: vec![],
         };
         assert_eq!(rec.iri(), "http://identifiers.org/biosample/SAMD00000345");

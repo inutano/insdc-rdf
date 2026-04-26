@@ -12,6 +12,7 @@ impl Serializer for TurtleSerializer {
     fn write_header<W: Write>(&self, writer: &mut W) -> std::io::Result<()> {
         writeln!(writer, "@prefix : <{}> .", SCHEMA)?;
         writeln!(writer, "@prefix idorg: <{}> .", IDORG_BIOSAMPLE)?;
+        writeln!(writer, "@prefix idorg_tax: <{}> .", IDORG_TAXONOMY)?;
         writeln!(writer, "@prefix dct: <{}> .", DCT)?;
         writeln!(writer, "@prefix ddbjont: <{}> .", DDBJ_BIOSAMPLE_ONT)?;
         writeln!(writer, "@prefix rdfs: <{}> .", RDFS)?;
@@ -56,6 +57,19 @@ impl Serializer for TurtleSerializer {
             po_lines.push(format!(
                 "dct:issued \"{}\"^^xsd:dateTime",
                 escape_turtle_string(date)
+            ));
+        }
+
+        if let Some(ref taxid) = record.taxonomy_id {
+            po_lines.push(format!(
+                "rdfs:seeAlso idorg_tax:{}",
+                escape_turtle_string(taxid)
+            ));
+        }
+        if let Some(ref taxname) = record.taxonomy_name {
+            po_lines.push(format!(
+                "ddbjont:taxonomyName \"{}\"",
+                escape_turtle_string(taxname)
             ));
         }
 
@@ -126,6 +140,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: Some("type strain".to_string()),
+            taxonomy_id: Some("9606".to_string()),
+            taxonomy_name: Some("Homo sapiens".to_string()),
             attributes: vec![Attribute {
                 attribute_name: "organism".to_string(),
                 harmonized_name: Some("organism".to_string()),
@@ -165,6 +181,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: None,
+            taxonomy_id: None,
+            taxonomy_name: None,
             attributes: vec![],
         };
         let s = ser.record_to_string(&rec);

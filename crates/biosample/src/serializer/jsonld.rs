@@ -14,6 +14,7 @@ struct JsonLdContext {
     ddbjont: &'static str,
     rdfs: &'static str,
     xsd: &'static str,
+    idorg_tax: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -63,8 +64,21 @@ struct JsonLdRecord {
     dct_modified: Option<TypedDateTime>,
     #[serde(rename = "dct:issued", skip_serializing_if = "Option::is_none")]
     dct_issued: Option<TypedDateTime>,
+    #[serde(rename = "rdfs:seeAlso", skip_serializing_if = "Option::is_none")]
+    taxonomy_link: Option<SeeAlso>,
+    #[serde(
+        rename = "ddbjont:taxonomyName",
+        skip_serializing_if = "Option::is_none"
+    )]
+    taxonomy_name: Option<String>,
     #[serde(rename = "additionalProperty", skip_serializing_if = "Vec::is_empty")]
     additional_property: Vec<PropertyValue>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct SeeAlso {
+    #[serde(rename = "@id")]
+    id: String,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -102,6 +116,7 @@ impl Serializer for JsonLdSerializer {
                 ddbjont: "http://ddbj.nig.ac.jp/ontologies/biosample/",
                 rdfs: "http://www.w3.org/2000/01/rdf-schema#",
                 xsd: "http://www.w3.org/2001/XMLSchema#",
+                idorg_tax: "http://identifiers.org/taxonomy/",
             },
             r#type: "ddbjont:BioSampleRecord",
             id: record.iri(),
@@ -111,6 +126,10 @@ impl Serializer for JsonLdSerializer {
             dct_created: record.submission_date.as_deref().map(TypedDateTime::new),
             dct_modified: record.last_update.as_deref().map(TypedDateTime::new),
             dct_issued: record.publication_date.as_deref().map(TypedDateTime::new),
+            taxonomy_link: record.taxonomy_id.as_ref().map(|id| SeeAlso {
+                id: format!("idorg_tax:{}", id),
+            }),
+            taxonomy_name: record.taxonomy_name.clone(),
             additional_property,
         };
 
@@ -149,6 +168,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: Some("type strain".to_string()),
+            taxonomy_id: Some("9606".to_string()),
+            taxonomy_name: Some("Homo sapiens".to_string()),
             attributes: vec![Attribute {
                 attribute_name: "organism".to_string(),
                 harmonized_name: Some("organism".to_string()),

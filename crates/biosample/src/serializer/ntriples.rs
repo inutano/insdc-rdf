@@ -83,6 +83,23 @@ impl Serializer for NTriplesSerializer {
             )?;
         }
 
+        if let Some(ref taxid) = record.taxonomy_id {
+            writeln!(
+                writer,
+                "<{}> <{}seeAlso> <{}{}> .",
+                subj, RDFS, IDORG_TAXONOMY, taxid
+            )?;
+        }
+        if let Some(ref taxname) = record.taxonomy_name {
+            writeln!(
+                writer,
+                "<{}> <{}taxonomyName> \"{}\" .",
+                subj,
+                DDBJ_BIOSAMPLE_ONT,
+                escape_ntriples_string(taxname)
+            )?;
+        }
+
         let schema_additional = format!("{}additionalProperty", SCHEMA);
         let schema_propval = format!("{}PropertyValue", SCHEMA);
         let schema_name = format!("{}name", SCHEMA);
@@ -151,6 +168,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: Some("type strain".to_string()),
+            taxonomy_id: Some("9606".to_string()),
+            taxonomy_name: Some("Homo sapiens".to_string()),
             attributes: vec![Attribute {
                 attribute_name: "organism".to_string(),
                 harmonized_name: Some("organism".to_string()),
