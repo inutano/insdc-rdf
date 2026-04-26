@@ -152,6 +152,8 @@ mod tests {
             last_update: None,
             publication_date: None,
             title: Some(format!("Sample {}", acc)),
+            taxonomy_id: Some("9606".to_string()),
+            taxonomy_name: Some("Homo sapiens".to_string()),
             attributes: vec![Attribute {
                 attribute_name: "organism".to_string(),
                 harmonized_name: Some("organism".to_string()),

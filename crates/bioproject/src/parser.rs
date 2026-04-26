@@ -285,14 +285,12 @@ impl<R: BufRead> BioProjectParser<R> {
                     }
                     depth -= 1;
                 }
-                Event::Text(ref e) => {
-                    if text_target != TextTarget::None {
-                        let text = e.unescape().map_err(|err| ConvertError::XmlParse {
-                            offset: self.reader.buffer_position(),
-                            message: format!("text unescape error: {}", err),
-                        })?;
-                        text_buf.push_str(&text);
-                    }
+                Event::Text(ref e) if text_target != TextTarget::None => {
+                    let text = e.unescape().map_err(|err| ConvertError::XmlParse {
+                        offset: self.reader.buffer_position(),
+                        message: format!("text unescape error: {}", err),
+                    })?;
+                    text_buf.push_str(&text);
                 }
                 Event::Eof => break,
                 _ => {}

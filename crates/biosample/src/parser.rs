@@ -78,19 +78,36 @@ impl<R: BufRead> BioSampleParser<R> {
                         }
                     }
 
-                    // Now parse the children
-                    let (title, attributes) = self.parse_biosample_children()?;
-
                     return match accession {
-                        Some(acc) => Ok(Some(BioSampleRecord {
-                            accession: acc,
-                            submission_date,
-                            last_update,
-                            publication_date,
-                            title,
-                            attributes,
-                        })),
-                        None => Err(ConvertError::MissingAccession { offset }),
+                        Some(acc) => {
+                            let mut record = BioSampleRecord {
+                                accession: acc,
+                                submission_date,
+                                last_update,
+                                publication_date,
+                                title: None,
+                                taxonomy_id: None,
+                                taxonomy_name: None,
+                                attributes: Vec::new(),
+                            };
+                            self.parse_biosample_children(&mut record)?;
+                            Ok(Some(record))
+                        }
+                        None => {
+                            // Still need to consume the rest of the element
+                            let mut dummy = BioSampleRecord {
+                                accession: String::new(),
+                                submission_date: None,
+                                last_update: None,
+                                publication_date: None,
+                                title: None,
+                                taxonomy_id: None,
+                                taxonomy_name: None,
+                                attributes: Vec::new(),
+                            };
+                            self.parse_biosample_children(&mut dummy)?;
+                            Err(ConvertError::MissingAccession { offset })
+                        }
                     };
                 }
                 Event::Eof => return Ok(None),
@@ -101,12 +118,15 @@ impl<R: BufRead> BioSampleParser<R> {
         }
     }
 
-    /// Parse the children of a `<BioSample>` element until its closing tag.
-    /// Returns (title, attributes).
+    /// Parse the children of a `<BioSample>` element until its closing tag,
+    /// populating the fields of the given record.
     fn parse_biosample_children(
         &mut self,
-    ) -> Result<(Option<String>, Vec<Attribute>), ConvertError> {
+        record: &mut BioSampleRecord,
+    ) -> Result<(), ConvertError> {
         let mut title: Option<String> = None;
+        let mut taxonomy_id: Option<String> = None;
+        let mut taxonomy_name: Option<String> = None;
         let mut attributes: Vec<Attribute> = Vec::new();
         let mut depth: u32 = 1; // we are inside <BioSample>
         let mut in_title = false;
@@ -137,6 +157,30 @@ impl<R: BufRead> BioSampleParser<R> {
                     } else if depth == 2 && tag == b"Title" {
                         in_title = true;
                         title_text.clear();
+                        depth += 1;
+                    } else if depth == 2 && tag == b"Organism" {
+                        // <Organism taxonomy_id="..." taxonomy_name="...">
+                        // may contain <OrganismName> child — we only need the attributes
+                        let offset = self.reader.buffer_position();
+                        for attr_result in e.attributes() {
+                            let attr = attr_result.map_err(|err| ConvertError::XmlParse {
+                                offset,
+                                message: format!("attribute parse error: {}", err),
+                            })?;
+                            let key = std::str::from_utf8(attr.key.as_ref()).unwrap_or("");
+                            let val = attr
+                                .unescape_value()
+                                .map_err(|err| ConvertError::XmlParse {
+                                    offset,
+                                    message: format!("attribute unescape error: {}", err),
+                                })?
+                                .into_owned();
+                            match key {
+                                "taxonomy_id" => taxonomy_id = Some(val),
+                                "taxonomy_name" => taxonomy_name = Some(val),
+                                _ => {}
+                            }
+                        }
                         depth += 1;
                     } else if depth == 1 && tag == b"Attributes" {
                         depth += 1;
@@ -211,7 +255,28 @@ impl<R: BufRead> BioSampleParser<R> {
                     let name = e.name();
                     let tag = name.as_ref();
 
-                    if depth == 2 && tag == b"Attribute" {
+                    if depth == 2 && tag == b"Organism" {
+                        let offset = self.reader.buffer_position();
+                        for attr_result in e.attributes() {
+                            let attr = attr_result.map_err(|err| ConvertError::XmlParse {
+                                offset,
+                                message: format!("attribute parse error: {}", err),
+                            })?;
+                            let key = std::str::from_utf8(attr.key.as_ref()).unwrap_or("");
+                            let val = attr
+                                .unescape_value()
+                                .map_err(|err| ConvertError::XmlParse {
+                                    offset,
+                                    message: format!("attribute unescape error: {}", err),
+                                })?
+                                .into_owned();
+                            match key {
+                                "taxonomy_id" => taxonomy_id = Some(val),
+                                "taxonomy_name" => taxonomy_name = Some(val),
+                                _ => {}
+                            }
+                        }
+                    } else if depth == 2 && tag == b"Attribute" {
                         // Self-closing <Attribute .../> -- value is None
                         let mut attr_name = String::new();
                         let mut harmonized: Option<String> = None;
@@ -272,7 +337,11 @@ impl<R: BufRead> BioSampleParser<R> {
             }
         }
 
-        Ok((title, attributes))
+        record.title = title;
+        record.taxonomy_id = taxonomy_id;
+        record.taxonomy_name = taxonomy_name;
+        record.attributes = attributes;
+        Ok(())
     }
 }
 
@@ -324,6 +393,8 @@ mod tests {
         assert_eq!(rec.last_update.as_deref(), Some("2021-06-01"));
         assert_eq!(rec.publication_date.as_deref(), Some("2020-02-01"));
         assert_eq!(rec.title.as_deref(), Some("Test organism sample"));
+        assert_eq!(rec.taxonomy_id, None);
+        assert_eq!(rec.taxonomy_name, None);
         assert_eq!(rec.attributes.len(), 2);
         assert_eq!(rec.attributes[0].attribute_name, "organism");
         assert_eq!(
@@ -335,6 +406,58 @@ mod tests {
         assert_eq!(rec.attributes[1].attribute_name, "strain");
         assert_eq!(rec.attributes[1].display_name, None);
         assert_eq!(rec.attributes[1].value.as_deref(), Some("K-12"));
+    }
+
+    #[test]
+    fn test_organism_taxonomy() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<BioSampleSet>
+<BioSample accession="SAMN00000002" submission_date="2008-04-04">
+  <Description>
+    <Title>Alistipes putredinis DSM 17216</Title>
+    <Organism taxonomy_id="445970" taxonomy_name="Alistipes putredinis DSM 17216"/>
+  </Description>
+  <Attributes>
+    <Attribute attribute_name="organism">Alistipes putredinis DSM 17216</Attribute>
+  </Attributes>
+</BioSample>
+</BioSampleSet>"#;
+
+        let (records, errors) = parse_all(xml);
+        assert_eq!(errors.len(), 0);
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].taxonomy_id.as_deref(), Some("445970"));
+        assert_eq!(
+            records[0].taxonomy_name.as_deref(),
+            Some("Alistipes putredinis DSM 17216")
+        );
+    }
+
+    #[test]
+    fn test_organism_with_child_elements() {
+        // Some records have <Organism> as a start tag with <OrganismName> child
+        let xml = r#"<BioSampleSet>
+<BioSample accession="SAMN99999999" submission_date="2020-01-01">
+  <Description>
+    <Title>Test</Title>
+    <Organism taxonomy_id="3702" taxonomy_name="Arabidopsis thaliana">
+      <OrganismName>Arabidopsis thaliana</OrganismName>
+    </Organism>
+  </Description>
+  <Attributes>
+    <Attribute attribute_name="organism">Arabidopsis thaliana</Attribute>
+  </Attributes>
+</BioSample>
+</BioSampleSet>"#;
+
+        let (records, errors) = parse_all(xml);
+        assert_eq!(errors.len(), 0);
+        assert_eq!(records.len(), 1);
+        assert_eq!(records[0].taxonomy_id.as_deref(), Some("3702"));
+        assert_eq!(
+            records[0].taxonomy_name.as_deref(),
+            Some("Arabidopsis thaliana")
+        );
     }
 
     #[test]

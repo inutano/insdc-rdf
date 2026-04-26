@@ -17,3 +17,6 @@ pub const DDBJ_DRA_ONT: &str = "http://ddbj.nig.ac.jp/ontologies/dra/";
 // BioProject
 pub const IDORG_BIOPROJECT: &str = "http://identifiers.org/bioproject/";
 pub const DDBJ_BIOPROJECT_ONT: &str = "http://ddbj.nig.ac.jp/ontologies/bioproject/";
+
+// Taxonomy
+pub const IDORG_TAXONOMY: &str = "http://identifiers.org/taxonomy/";
