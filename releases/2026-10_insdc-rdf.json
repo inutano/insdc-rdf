@@ -18,8 +18,8 @@
   ],
   "software": {
     "name": "insdc-rdf",
-    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
-    "version": "v0.3.0",
+    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) to RDF.",
+    "version": "v0.3.0-1-gc3ba3b0",
     "commit": "c3ba3b06db21690760316ca9148299e9fe317c6c",
     "repository": "https://github.com/inutano/insdc-rdf"
   },
@@ -33,9 +33,17 @@
     {"name": "bioproject", "title": "BioProject", "dir": "bioproject", "schema_dir": "config/bioproject", "inputs": ["https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml"], "expected_triples": 5772603},
     {"name": "biosample", "title": "BioSample", "dir": "biosample", "schema_dir": "config/biosample", "inputs": ["https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz"], "expected_triples": 4031734256},
     {"name": "sra", "title": "SRA accessions", "dir": "sra", "schema_dir": "config/sra", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"], "expected_triples": 1014701708},
-    {"name": "sra-experiment", "title": "SRA experiments", "dir": "sra-experiment", "schema_dir": "config/sra-experiment", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"], "expected_triples": 657258906}
+    {"name": "sra-experiment", "title": "SRA experiments", "dir": "sra-experiment", "schema_dir": "config/sra-experiment", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"], "expected_triples": 657258906,
+     "software": {
+       "name": "insdc-rdf",
+       "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
+       "version": "v0.3.0-20-g458d813",
+       "commit": "458d813aa491b5810f331786789b482685d6ee83",
+       "repository": "https://github.com/inutano/insdc-rdf"
+     }}
   ],
   "tarball": false,
+  "qlever_recipe_url": "https://github.com/inutano/insdc-rdf/blob/b3b3361755343c159ff48309d169d4f66af748c8/scripts/qlever_rebuild_index.sh",
   "derived_from": [
     "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml",
     "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz",
@@ -49,7 +57,12 @@
     ],
     "notes": [
       "`dra_ont:Experiment` subjects come from both `sra` (accession list) and `sra-experiment` (experiment XML); load both for the full set.",
-      "Every triple is in the default graph. The chunks of one source can be loaded in any order."
+      "Every triple is in the default graph. The chunks of one source can be loaded in any order.",
+      "BioProject `dct:created` values are calendar dates but are typed `xsd:dateTime` in this release, and the schema in `schema/bioproject/` declares the intended `xsd:date`. Compare them as strings, or cast with `xsd:date(str(?created))`. The converter types them as `xsd:date` from the next release on.",
+      "The `sra-experiment` source was re-converted with a later insdc-rdf commit, which writes instrument models such as `454 GS FLX+` as full IRIs in Turtle. Its N-Triples and JSON-LD are byte-identical to the first conversion (see Provenance)."
+    ],
+    "terms": [
+      "The data are derived from NCBI BioProject, BioSample and SRA. NCBI places no restrictions on their use or distribution, but notes that original submitters may claim rights in portions of the data: <https://www.ncbi.nlm.nih.gov/home/about/policies/>. See also the bucket's sources and licenses: <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/SOURCES.md>."
     ]
   }
 }

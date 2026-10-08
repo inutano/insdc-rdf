@@ -22,6 +22,8 @@ _spec.loader.exec_module(prr)
 
 RID = "2099-01_test_rdf"
 COMMIT = "0123456789abcdef0123456789abcdef01234567"
+COMMIT2 = "fedcba9876543210fedcba9876543210fedcba98"
+RECIPE = "https://example.org/repo/blob/%s/scripts/qlever_rebuild_index.sh" % COMMIT
 FMTS = ("nt", "ttl", "jsonld")
 
 ALPHA_NT = [
@@ -68,7 +70,7 @@ def env(tmp_path):
     _source(data, "beta", [BETA_NT],
             "2026-10-08T03:00:00+00:00", "2026-10-08T02:00:00+00:00")
     repo = tmp_path / "repo"
-    for f in ("model.yaml", "shape.shex", "schema.svg"):
+    for f in ("model.yaml", "shape.shex", "schema.svg", "endpoint.yaml"):
         _write(repo / "config" / "alpha" / f, "alpha " + f + "\n")
     for f in ("model.yaml", "shape.shex"):
         _write(repo / "config" / "beta" / f, "beta " + f + "\n")
@@ -82,9 +84,10 @@ def env(tmp_path):
         "license": {"id": "https://example.org/license", "name": "Test License"},
         "authors": [
             {"id": "#ann", "name": "Ann A", "affiliation": ["#org"]},
-            {"id": "#bob", "name": "Bob B", "affiliation": ["#org"]},
+            {"id": "#bob", "name": "Bob B", "affiliation": ["#org", "#org2"]},
         ],
-        "organizations": [{"id": "#org", "name": "Org Inc."}],
+        "organizations": [{"id": "#org", "name": "Org Inc."},
+                          {"id": "#org2", "name": "Other Org"}],
         "software": {
             "name": "insdc-rdf",
             "description": "Converter.",
@@ -106,8 +109,10 @@ def env(tmp_path):
         ],
         "tarball": False,
         "derived_from": ["https://example.org/in1.xml"],
+        "qlever_recipe_url": RECIPE,
         "readme": {"intro": ["Intro paragraph one.", "Intro paragraph two."],
-                   "notes": ["First note with `code`.", "Second note."]},
+                   "notes": ["First note with `code`.", "Second note."],
+                   "terms": ["Upstream terms one.", "Upstream terms two."]},
     }
     return {"tmp": tmp_path, "data": data, "repo": repo, "spec": spec}
 
@@ -328,6 +333,10 @@ def test_tarball(env):
     assert RID + "/ro-crate-metadata.json" in names
     assert entry["tarball"] == "releases/%s.tar.gz" % RID
     assert entry["tarball_bytes"] == tb.stat().st_size
+    head = tb.read_bytes()[:10]
+    assert head[:3] == b"\x1f\x8b\x08"
+    assert head[3] & 0x08 == 0, "FNAME set: the gzip header carries a file name"
+    assert head[4:8] == b"\x00\x00\x00\x00", "gzip header mtime is not 0"
 
     entry2 = run(env, out=env["tmp"] / "out2")
     assert entry2["tarball"] is None
@@ -370,6 +379,142 @@ def test_readme(env):
         assert n in text
     assert "tar xzf" not in text
     assert "https://example.org/base/releases/%s/alpha/nt/chunk_0000.nt.gz" % RID in text
+
+
+def _readme(env, out=None):
+    out = out or env["tmp"] / "out"
+    return (out / RID / "README.md").read_text(encoding="utf-8")
+
+
+def _section(text, heading):
+    lines = text.splitlines()
+    start = lines.index(heading)
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")),
+               len(lines))
+    return lines[start + 1:end]
+
+
+def _crate(env, out=None):
+    out = out or env["tmp"] / "out"
+    crate = json.loads((out / RID / "ro-crate-metadata.json").read_text(encoding="utf-8"))
+    return {e["@id"]: e for e in crate["@graph"]}
+
+
+def test_readme_authors_after_intro(env):
+    run(env)
+    text = _readme(env)
+    lines = text.splitlines()
+    assert lines.index("Intro paragraph two.") < lines.index("## Authors") \
+        < lines.index("## Contents")
+    assert [l for l in _section(text, "## Authors") if l] == [
+        "- Ann A (Org Inc.)",
+        "- Bob B (Org Inc.; Other Org)",
+    ]
+
+
+def test_readme_citation_and_terms(env):
+    run(env)
+    lic = [l for l in _section(_readme(env), "## License and citation") if l]
+    assert lic == [
+        "Licensed under [Test License](https://example.org/license).",
+        "Upstream terms one.",
+        "Upstream terms two.",
+        "Suggested citation: Ann A, Bob B. Test release. BioSample Plus, release "
+        "`%s` (2099). https://example.org/base/releases/%s/" % (RID, RID),
+    ]
+
+
+def test_readme_links_pinned_qlever_recipe(env):
+    run(env)
+    load = "\n".join(_section(_readme(env), "## Load into a triplestore"))
+    assert "[`scripts/qlever_rebuild_index.sh`](%s)" % RECIPE in load
+    assert "insdc-rdf repository" not in load
+
+
+@pytest.mark.parametrize("missing", ["terms", "qlever_recipe_url"])
+def test_required_readme_fields(env, missing):
+    spec = copy.deepcopy(env["spec"])
+    if missing == "terms":
+        spec["readme"]["terms"] = []
+    else:
+        del spec[missing]
+    with pytest.raises(prr.PackageError, match=missing):
+        run(env, spec=spec)
+    assert not (env["tmp"] / "out" / (RID + ".partial")).exists()
+
+
+def test_single_software_entity_by_default(env):
+    run(env)
+    by_id = _crate(env)
+    apps = [i for i, e in by_id.items() if e["@type"] == "SoftwareApplication"]
+    assert apps == ["#insdc-rdf-0123456"]
+    for n in ("alpha", "beta"):
+        assert by_id["#convert-" + n]["instrument"] == {"@id": "#insdc-rdf-0123456"}
+    prov = _section(_readme(env), "## Provenance")
+    assert ("| Alpha | [`v1.2.3`](https://example.org/repo/commit/%s) | "
+            "2026-10-08T00:00:00+00:00 | 2026-10-08T01:00:00+00:00 |" % COMMIT) in prov
+
+
+def test_per_source_software(env):
+    spec = copy.deepcopy(env["spec"])
+    spec["sources"][1]["software"] = {
+        "name": "insdc-rdf", "description": "Later converter.", "version": "v1.2.3-4-gfedcba9",
+        "commit": COMMIT2, "repository": "https://example.org/repo"}
+    run(env, spec=spec)
+    by_id = _crate(env)
+    apps = {i: e for i, e in by_id.items() if e["@type"] == "SoftwareApplication"}
+    assert sorted(apps) == ["#insdc-rdf-0123456", "#insdc-rdf-fedcba9"]
+    assert apps["#insdc-rdf-fedcba9"]["version"] == "v1.2.3-4-gfedcba9"
+    assert apps["#insdc-rdf-fedcba9"]["description"] == "Later converter."
+    assert apps["#insdc-rdf-fedcba9"]["url"] == "https://example.org/repo/commit/" + COMMIT2
+    assert by_id["#convert-alpha"]["instrument"] == {"@id": "#insdc-rdf-0123456"}
+    assert by_id["#convert-beta"]["instrument"] == {"@id": "#insdc-rdf-fedcba9"}
+    prov = _section(_readme(env), "## Provenance")
+    assert not [l for l in prov if l.startswith("Converted with")]
+    assert "| Source | insdc-rdf version | Started | Ended |" in prov
+    assert ("| Alpha | [`v1.2.3`](https://example.org/repo/commit/%s) | "
+            "2026-10-08T00:00:00+00:00 | 2026-10-08T01:00:00+00:00 |" % COMMIT) in prov
+    assert ("| Beta | [`v1.2.3-4-gfedcba9`](https://example.org/repo/commit/%s) | "
+            "2026-10-08T02:00:00+00:00 | 2026-10-08T03:00:00+00:00 |" % COMMIT2) in prov
+
+
+def test_software_unused_top_level_not_described(env):
+    spec = copy.deepcopy(env["spec"])
+    for s in spec["sources"]:
+        s["software"] = dict(spec["software"], commit=COMMIT2, version="v2")
+    run(env, spec=spec)
+    by_id = _crate(env)
+    apps = [i for i, e in by_id.items() if e["@type"] == "SoftwareApplication"]
+    assert apps == ["#insdc-rdf-fedcba9"]
+
+
+def test_conflicting_software_for_one_commit_refused(env):
+    spec = copy.deepcopy(env["spec"])
+    spec["sources"][1]["software"] = dict(spec["software"], version="v9.9.9")
+    with pytest.raises(prr.PackageError, match="0123456"):
+        run(env, spec=spec)
+
+
+def test_schema_copy_skips_endpoint_yaml(env):
+    run(env)
+    rel = env["tmp"] / "out" / RID
+    assert sorted(p.name for p in (rel / "schema" / "alpha").iterdir()) == [
+        "model.yaml", "schema.svg", "shape.shex"]
+    sums = (rel / "provenance" / "checksums.sha256").read_text()
+    assert "endpoint.yaml" not in sums
+
+
+def test_stray_subdirectory_in_chunk_dir_ignored(env):
+    stray = env["data"] / "alpha" / "nt" / "stray"
+    stray.mkdir()
+    (stray / "chunk_9999.nt").write_text('<http://e/x> <http://e/p> "x" .\n')
+    entry = run(env)
+    rel = env["tmp"] / "out" / RID
+    assert not (rel / "alpha" / "nt" / "stray").exists()
+    assert not (rel / "alpha" / "nt" / "stray.gz").exists()
+    assert sorted(p.name for p in (rel / "alpha" / "nt").iterdir()) == [
+        "chunk_0000.nt.gz", "chunk_0001.nt.gz"]
+    assert entry["triple_count"] == 9
 
 
 def test_cli(env):
@@ -418,8 +563,31 @@ def test_committed_specs():
         for s in spec["sources"]:
             assert (REAL_REPO / s["schema_dir"]).is_dir()
             assert set(s["inputs"]) <= ids
-        commit = spec["software"]["commit"]
-        assert re.match(r"^[0-9a-f]{40}$", commit)
-        r = subprocess.run(["git", "merge-base", "--is-ancestor", commit, "HEAD"],
+        assert spec["readme"]["terms"], (p.name, "readme.terms")
+        softwares = [spec["software"]] + [s["software"] for s in spec["sources"]
+                                          if "software" in s]
+        for sw in softwares:
+            for k in ("name", "description", "version", "commit", "repository"):
+                assert sw.get(k), (p.name, k)
+            commit = sw["commit"]
+            assert re.match(r"^[0-9a-f]{40}$", commit)
+            r = subprocess.run(["git", "merge-base", "--is-ancestor", commit, "HEAD"],
+                               cwd=str(REAL_REPO))
+            assert r.returncode == 0, (p.name, commit)
+            d = subprocess.run(["git", "describe", "--tags", commit], cwd=str(REAL_REPO),
+                               stdout=subprocess.PIPE, universal_newlines=True)
+            assert d.returncode == 0 and d.stdout.strip() == sw["version"], \
+                (p.name, commit, d.stdout.strip(), sw["version"])
+        m = re.match(r"^https://github\.com/inutano/insdc-rdf/blob/([0-9a-f]{40})"
+                     r"/scripts/qlever_rebuild_index\.sh$", spec["qlever_recipe_url"])
+        assert m, (p.name, spec["qlever_recipe_url"])
+        recipe_commit = m.group(1)
+        r = subprocess.run(["git", "merge-base", "--is-ancestor", recipe_commit, "HEAD"],
                            cwd=str(REAL_REPO))
-        assert r.returncode == 0, (p.name, commit)
+        assert r.returncode == 0, (p.name, recipe_commit)
+        blob = "%s:scripts/qlever_rebuild_index.sh" % recipe_commit
+        r = subprocess.run(["git", "cat-file", "-e", blob], cwd=str(REAL_REPO))
+        assert r.returncode == 0, (p.name, blob)
+        script = subprocess.run(["git", "show", blob], cwd=str(REAL_REPO),
+                                stdout=subprocess.PIPE, universal_newlines=True).stdout
+        assert "nt.gz" in script, (p.name, blob)

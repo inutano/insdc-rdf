@@ -102,6 +102,29 @@ def relpath(path, root):
     return path.relative_to(root).as_posix()
 
 
+def software_for(spec, source):
+    """The software that converted a source: its own, else the release's."""
+    return source.get("software") or spec["software"]
+
+
+def software_id(sw):
+    return "#%s-%s" % (sw["name"], sw["commit"][:7])
+
+
+def softwares_used(spec):
+    """The distinct software objects of the sources, in order of first use."""
+    seen = {}
+    for s in spec["sources"]:
+        sw = software_for(spec, s)
+        seen.setdefault(software_id(sw), sw)
+    return seen
+
+
+def regular_files_in(directory):
+    """The regular files directly in a directory, sorted by name."""
+    return sorted(p for p in Path(directory).iterdir() if p.is_file())
+
+
 # ------------------------------------------------------------- validation
 
 
@@ -116,6 +139,18 @@ def validate(spec, out_dir, data_root, repo_root):
         if t.exists():
             raise PackageError("output already exists, refusing to overwrite: %s" % t)
 
+    if not spec.get("qlever_recipe_url"):
+        raise PackageError("spec has no qlever_recipe_url")
+    if not spec["readme"].get("terms"):
+        raise PackageError("spec has no readme.terms")
+    by_id = {}
+    for s in spec["sources"]:
+        sw = software_for(spec, s)
+        prev = by_id.setdefault(software_id(sw), sw)
+        if prev != sw:
+            raise PackageError("%s: two different software objects for commit %s"
+                               % (s["name"], sw["commit"]))
+
     for s in spec["sources"]:
         name = s["name"]
         base = Path(data_root) / s["dir"]
@@ -129,7 +164,7 @@ def validate(spec, out_dir, data_root, repo_root):
             d = base / fmt
             if not d.is_dir():
                 raise PackageError("%s: %s is not a directory" % (name, d))
-            files = [p for p in d.iterdir() if p.is_file()]
+            files = regular_files_in(d)
             if len(files) != total:
                 raise PackageError(
                     "%s: %s holds %d files, manifest says %d chunks"
@@ -156,6 +191,12 @@ def build_readme(spec, stats, tree_lines):
            % (rid, spec["date_published"], lic["name"], lic["id"]), ""]
     for p in spec["readme"]["intro"]:
         out += [p, ""]
+
+    orgs = {o["id"]: o["name"] for o in spec["organizations"]}
+    out += ["## Authors", ""]
+    for a in spec["authors"]:
+        out.append("- %s (%s)" % (a["name"], "; ".join(orgs[o] for o in a["affiliation"])))
+    out.append("")
 
     out += ["## Contents", "",
             "| Source | Records | Triples | Chunks | N-Triples (gz) | Turtle (gz) | JSON-LD (gz) |",
@@ -202,9 +243,9 @@ def build_readme(spec, stats, tree_lines):
             "one or streamed together. For example, with a loader that reads "
             "N-Triples on stdin:", "", "```sh",
             "zcat */nt/*.nt.gz | <loader reading N-Triples on stdin>", "```", "",
-            "See `scripts/qlever_rebuild_index.sh` in the "
-            "[insdc-rdf repository](%s) for the QLever recipe used to validate "
-            "this release." % spec["software"]["repository"], ""]
+            "The QLever recipe used to validate this release is "
+            "[`scripts/qlever_rebuild_index.sh`](%s). It reads the `<source>/nt/` "
+            "directories of the release as downloaded." % spec["qlever_recipe_url"], ""]
 
     out += ["## Schema", "",
             "`schema/<source>/` holds the rdf-config model, the ShEx shape "
@@ -220,19 +261,22 @@ def build_readme(spec, stats, tree_lines):
         out.append("| [%s](%s) | %s | %s | %s |" % (
             i["name"], i["id"], i.get("date_modified", "—"), size,
             i.get("md5", "—")))
-    sw = spec["software"]
-    out += ["", "Converted with insdc-rdf `%s` ([`%s`](%s/commit/%s))"
-            % (sw["version"], sw["commit"][:7], sw["repository"], sw["commit"]), ""]
+    out += ["", "| Source | insdc-rdf version | Started | Ended |", "|---|---|---|---|"]
     for s in spec["sources"]:
         st = stats[s["name"]]
-        out.append("- %s: conversion started %s, completed %s"
-                   % (s["title"], st["started_at"], st["completed_at"]))
+        sw = software_for(spec, s)
+        out.append("| %s | [`%s`](%s/commit/%s) | %s | %s |" % (
+            s["title"], sw["version"], sw["repository"], sw["commit"],
+            st["started_at"], st["completed_at"]))
     out.append("")
 
     out += ["## License and citation", "",
-            "Licensed under [%s](%s)." % (lic["name"], lic["id"]), "",
-            "Suggested citation: %s, release `%s`. %s/releases/%s/"
-            % (spec["name"], rid, base_url, rid), ""]
+            "Licensed under [%s](%s)." % (lic["name"], lic["id"]), ""]
+    for p in spec["readme"]["terms"]:
+        out += [p, ""]
+    out += ["Suggested citation: %s. %s. BioSample Plus, release `%s` (%s). %s/releases/%s/"
+            % (", ".join(a["name"] for a in spec["authors"]), spec["name"], rid,
+               spec["date_published"][:4], base_url, rid), ""]
     out += ["## Contact", "", "https://github.com/inutano/insdc-rdf/issues", ""]
     return "\n".join(out)
 
@@ -259,8 +303,6 @@ def encoding_for(rel):
 def build_crate(spec, rel_root, hashes, stats):
     files = [p for p in regular_files(rel_root) if p.name != "ro-crate-metadata.json"]
     rels = [relpath(p, rel_root) for p in files]
-    sw = spec["software"]
-    sw_id = "#%s-%s" % (sw["name"], sw["commit"][:7])
     sources = spec["sources"]
 
     def ids(items):
@@ -315,15 +357,17 @@ def build_crate(spec, rel_root, hashes, stats):
             e["dateModified"] = i["date_modified"]
         graph.append(e)
 
-    graph.append({"@id": sw_id, "@type": "SoftwareApplication", "name": sw["name"],
-                  "description": sw["description"], "version": sw["version"],
-                  "softwareVersion": sw["commit"],
-                  "url": "%s/commit/%s" % (sw["repository"], sw["commit"])})
+    for sw_id, sw in softwares_used(spec).items():
+        graph.append({"@id": sw_id, "@type": "SoftwareApplication", "name": sw["name"],
+                      "description": sw["description"], "version": sw["version"],
+                      "softwareVersion": sw["commit"],
+                      "url": "%s/commit/%s" % (sw["repository"], sw["commit"])})
     for s in sources:
         st = stats[s["name"]]
         graph.append({"@id": "#convert-" + s["name"], "@type": "CreateAction",
                       "name": "insdc-rdf convert --source " + s["name"],
-                      "instrument": {"@id": sw_id}, "object": ids(s["inputs"]),
+                      "instrument": {"@id": software_id(software_for(spec, s))},
+                      "object": ids(s["inputs"]),
                       "result": {"@id": s["name"] + "/"},
                       "startTime": st["started_at"], "endTime": st["completed_at"],
                       "actionStatus": "http://schema.org/CompletedActionStatus"})
@@ -361,7 +405,7 @@ def package(spec, out_dir, data_root, repo_root, jobs=4, level=6):
                     "triples": 0, "bytes": {f: 0 for f in FORMATS}}
         for fmt in FORMATS:
             (part / n / fmt).mkdir(parents=True)
-            for f in sorted((base / fmt).iterdir()):
+            for f in regular_files_in(base / fmt):
                 dst = part / n / fmt / (f.name + ".gz")
                 tasks.append((str(f), str(dst), n, fmt, level))
 
@@ -400,8 +444,9 @@ def package(spec, out_dir, data_root, repo_root, jobs=4, level=6):
                         str(part / "provenance" / (s["name"] + ".manifest.json")))
         sdir = part / "schema" / s["name"]
         sdir.mkdir(parents=True)
-        for f in sorted((Path(repo_root) / s["schema_dir"]).iterdir()):
-            if f.is_file():
+        # endpoint.yaml names internal SPARQL endpoints, which mean nothing to users.
+        for f in regular_files_in(Path(repo_root) / s["schema_dir"]):
+            if f.name != "endpoint.yaml":
                 shutil.copyfile(str(f), str(sdir / f.name))
 
     tsv = "source\ttriples\n" + "".join(
@@ -449,7 +494,10 @@ def package(spec, out_dir, data_root, repo_root, jobs=4, level=6):
     if spec.get("tarball"):
         tb = out / (rid + ".tar.gz")
         tb_part = out / (rid + ".tar.gz.partial")
-        with tarfile.open(str(tb_part), "w:gz") as t:
+        # No file name and mtime 0 in the gzip header, as for the crate tarballs.
+        with open(str(tb_part), "wb") as raw, \
+                gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz, \
+                tarfile.open(fileobj=gz, mode="w") as t:
             t.add(str(final), arcname=rid)
         tb_part.rename(tb)
         entry["tarball_bytes"] = tb.stat().st_size
