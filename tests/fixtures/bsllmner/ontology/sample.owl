@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#">
+  <owl:Class rdf:about="http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027">
+    <rdfs:label>Hep-G2</rdfs:label>
+    <oboInOwl:hasRelatedSynonym>HepG2</oboInOwl:hasRelatedSynonym>
+  </owl:Class>
+  <owl:Class rdf:about="http://purl.obolibrary.org/obo/UBERON_0002107">
+    <rdfs:label>liver</rdfs:label>
+    <oboInOwl:hasRelatedSynonym>iecur "jecur"</oboInOwl:hasRelatedSynonym>
+  </owl:Class>
+</rdf:RDF>
