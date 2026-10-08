@@ -1,0 +1,52 @@
+- BioSample idorg_biosample:SAMD00270091:
+  - a: biosample_ont:BioSampleRecord
+  - schema:additionalProperty+:
+    - annotation: Annotation
+
+- Annotation <http://ddbj.nig.ac.jp/biosample/SAMD00270091#bsllmner/2026-06_mistral-small3.1-24b-v2/rnaseq_human_5y/cell_line/CVCL_0027>:
+  - a: schema:PropertyValue
+  - schema:name:
+    - annotation_name: "cell_line"
+  - schema:propertyID:
+    - annotation_field: "cell_line"
+  - schema:value+:
+    - annotation_value: "HepG2"
+  - schema:valueReference:
+    - annotation_term: Term
+  - biosample_ont:exactMatch:
+    - exact_match: '"true"^^xsd:boolean'
+  - prov:wasGeneratedBy:
+    - annotation_run: Run
+
+- Term <http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027>:
+  - a: schema:DefinedTerm
+  - rdfs:label+:
+    - term_label: "Hep-G2"
+
+- Run <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/#run-rnaseq_human_5y_2021-08>:
+  - a: prov:Activity
+  - rdfs:label:
+    - run_name: "rnaseq_human_5y_2021-08"
+  - prov:startedAtTime:
+    - run_started: '"2026-05-30T17:20:09+00:00"^^xsd:dateTime'
+  - prov:endedAtTime:
+    - run_ended: '"2026-05-30T22:16:22+00:00"^^xsd:dateTime'
+  - prov:wasAssociatedWith+:
+    - run_software: <https://github.com/dbcls/bsllmner-mk2/commit/9a3828811f1ab4bac85615e0e1b2efcc6603265f>
+  - biosample_ont:llmModel:
+    - run_model: "mistral-small3.1:24b"
+  - schema:isPartOf:
+    - run_release: Release
+
+- Release <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/>:
+  - a: schema:Dataset
+  - schema:name:
+    - release_name: "Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample records"
+  - schema:version:
+    - release_version: "2026-06_mistral-small3.1-24b-v2"
+  - schema:datePublished:
+    - release_date: '"2026-09-26"^^xsd:date'
+  - schema:license:
+    - release_license: <https://creativecommons.org/licenses/by/4.0/>
+  - schema:citation:
+    - release_citation: <https://doi.org/10.1101/2025.02.17.638570>

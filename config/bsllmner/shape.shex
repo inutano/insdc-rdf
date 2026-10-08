@@ -1,0 +1,43 @@
+PREFIX biosample: <http://ddbj.nig.ac.jp/biosample/>
+PREFIX biosample_ont: <http://ddbj.nig.ac.jp/ontologies/biosample/>
+PREFIX idorg_biosample: <http://identifiers.org/biosample/>
+PREFIX schema: <http://schema.org/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX obo: <http://purl.obolibrary.org/obo/>
+<BioSampleShape> {
+  a [ biosample_ont:BioSampleRecord ] ;
+  schema:additionalProperty @<AnnotationShape> +
+}
+<AnnotationShape> {
+  a [ schema:PropertyValue ] ;
+  schema:name xsd:string ;
+  schema:propertyID xsd:string ;
+  schema:value xsd:string + ;
+  schema:valueReference @<TermShape> ;
+  biosample_ont:exactMatch xsd:boolean ;
+  prov:wasGeneratedBy @<RunShape>
+}
+<TermShape> {
+  a [ schema:DefinedTerm ] ;
+  rdfs:label xsd:string +
+}
+<RunShape> {
+  a [ prov:Activity ] ;
+  rdfs:label xsd:string ;
+  prov:startedAtTime xsd:dateTime ;
+  prov:endedAtTime xsd:dateTime ;
+  prov:wasAssociatedWith IRI + ;
+  biosample_ont:llmModel xsd:string ;
+  schema:isPartOf @<ReleaseShape>
+}
+<ReleaseShape> {
+  a [ schema:Dataset ] ;
+  schema:name xsd:string ;
+  schema:version xsd:string ;
+  schema:datePublished xsd:date ;
+  schema:license IRI ;
+  schema:citation IRI
+}

@@ -1,0 +1,11 @@
+annotations_of_sample:
+  description: Get the bsllmner annotations of a BioSample
+  variables: [BioSample, annotation_field, annotation_value, annotation_term, term_label]
+
+samples_by_term:
+  description: List BioSamples annotated with an ontology term
+  variables: [BioSample, annotation_field, annotation_term]
+
+annotation_provenance:
+  description: Get the run and release that produced an annotation
+  variables: [Annotation, run_name, run_model, release_version]

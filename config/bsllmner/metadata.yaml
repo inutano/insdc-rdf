@@ -1,0 +1,16 @@
+title: BioSample bsllmner-mk2 annotations RDF
+website: https://biosampleplus.s3.ap-northeast-1.amazonaws.com/index.html
+description: Ontology terms that bsllmner-mk2 extracted from BioSample records with a large language model, attached to the records as schema:PropertyValue nodes
+tags: [BioSample, ontology annotation, LLM]
+provider: Database Center for Life Science
+creators:
+  - name: Shuya Ikeda
+    affiliation: Database Center for Life Science
+  - name: Hirotaka Suetake
+    affiliation: Sator Inc.
+  - name: Tazro Ohta
+    affiliation: Database Center for Life Science
+version: "2026-06_mistral-small3.1-24b-v2"
+issued: 2026-09-26
+licenses:
+  - Attribution 4.0 International (CC BY 4.0)

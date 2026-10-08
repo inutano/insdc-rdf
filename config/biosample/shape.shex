@@ -6,11 +6,9 @@ PREFIX idorg_biosample: <http://identifiers.org/biosample/>
 PREFIX idorg_sra: <http://identifiers.org/insdc.sra/>
 PREFIX idorg_bioproject: <http://identifiers.org/bioproject/>
 PREFIX schema: <http://schema.org/>
-PREFIX cellosaurus: <http://web.expasy.org/cellosaurus/>
 PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 <BioSampleShape> {
   a [ biosample_ont:BioSampleRecord ] ;
@@ -20,7 +18,6 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
   dct:issued xsd:time ;
   dct:modified xsd:time ;
   schema:additionalProperty @<OriginalSamplePropertyShape> * ;
-  schema:additionalProperty @<AnnotatedSampleTypeShape> * ;
   rdfs:label xsd:string ;
   rdfs:seeAlso @<SRAStudyShape> + ;
   rdfs:seeAlso @<SRAExperimentShape> + ;
@@ -50,15 +47,5 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 <OriginalSamplePropertyShape> {
   a [ schema:PropertyValue ] ;
   schema:name xsd:string ;
-  schema:value xsd:string ;
-  schema:valueReference IRI + ;
-  prov:wasAttributedTo IRI
-}
-<AnnotatedSampleTypeShape> {
-  a [ schema:PropertyValue ] ;
-  schema:name xsd:string ;
-  schema:value xsd:string ;
-  schema:valueReference IRI + ;
-  prov:wasAttributedTo IRI ;
-  biosample_ont:annotationConfidence xsd:float
+  schema:value xsd:string
 }
