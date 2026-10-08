@@ -4,7 +4,7 @@
   "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
   "name": "Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample records, as RDF",
   "description": "RDF conversion of BioSample Plus release 2026-06_mistral-small3.1-24b-v2, produced with insdc-rdf: 6,746,471 ontology-mapped annotations from 4,189,039 result entries, using 38,737 distinct terms, as schema:PropertyValue nodes on BioSample IRIs, with the 311 bsllmner-mk2 runs as prov:Activity provenance. 47,307,387 triples in N-Triples, Turtle and JSON-LD.",
-  "date_published": "2026-10-08",
+  "date_published": "2026-10-09",
   "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
   "authors": [
     {"id": "#shuya-ikeda", "name": "Shuya Ikeda", "affiliation": ["#dbcls"]},

@@ -4,7 +4,7 @@
   "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
   "name": "INSDC BioProject, BioSample and SRA metadata as RDF",
   "description": "RDF conversion of the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 (SRA experiment metadata of 2026-09-13), produced with insdc-rdf: 60,144,760 BioSample, 1,124,118 BioProject, 143,187,558 SRA accession and 41,593,302 SRA experiment records as 5,709,467,473 N-Triples lines (5,621,216,568 distinct triples), in N-Triples, Turtle and JSON-LD. The bsllmner-mk2 annotation RDF attaches to the BioSample IRIs of this release.",
-  "date_published": "2026-10-08",
+  "date_published": "2026-10-09",
   "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
   "authors": [
     {"id": "#tazro-ohta", "name": "Tazro Ohta", "affiliation": ["#dbcls", "#chiba-ai-med", "#chiba-iaar"]},
