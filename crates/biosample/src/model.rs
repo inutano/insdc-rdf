@@ -31,25 +31,6 @@ impl BioSampleRecord {
     }
 }
 
-use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
-
-/// Characters that must be percent-encoded in an IRI fragment.
-const IRI_FRAGMENT_ENCODE_SET: &AsciiSet = &CONTROLS
-    .add(b' ')
-    .add(b'"')
-    .add(b'#')
-    .add(b'%')
-    .add(b'<')
-    .add(b'>')
-    .add(b'[')
-    .add(b']')
-    .add(b'{')
-    .add(b'}')
-    .add(b'|')
-    .add(b'^')
-    .add(b'`')
-    .add(b'\\');
-
 impl Attribute {
     /// Returns the preferred name for this attribute (harmonized_name > attribute_name).
     pub fn preferred_name(&self) -> &str {
@@ -60,13 +41,11 @@ impl Attribute {
 
     /// Returns the property IRI fragment for this attribute, URL-encoded.
     pub fn property_iri(&self, accession: &str) -> String {
-        let name = self.preferred_name();
-        let encoded = utf8_percent_encode(name, IRI_FRAGMENT_ENCODE_SET);
         format!(
             "{}{}#{}",
             insdc_rdf_core::prefix::DDBJ_BIOSAMPLE,
             accession,
-            encoded
+            insdc_rdf_core::iri::encode_fragment(self.preferred_name())
         )
     }
 }
