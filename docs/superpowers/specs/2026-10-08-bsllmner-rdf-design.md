@@ -73,7 +73,6 @@ idorg_biosample:SAMD00270091
 
 <http://ddbj.nig.ac.jp/biosample/SAMD00270091#bsllmner/2026-06_mistral-small3.1-24b-v2/rnaseq_human_5y/cell_line/CVCL_0027>
   a schema:PropertyValue ;
-  schema:name "cell_line" ;
   schema:propertyID "cell_line" ;
   schema:value "HepG2" ;
   schema:valueReference <http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027> ;
@@ -91,8 +90,7 @@ Rules:
   - `term_local` is `term_id` with `:` replaced by `_` (`CVCL:0027` → `CVCL_0027`, `NCBIGene:5265` → `NCBIGene_5265`), percent-encoded with the same fragment encode set that `Attribute::property_iri` uses.
   - `(accession, dataset)` is unique in the release, so the IRI is unique per (entry, field, term).
 - **Merging**: items of one entry and field that share a `term_uri` become one node. It gets one `schema:value` per distinct `value`, and `biosample_ont:exactMatch` is true if any merged item has `exact_match: true`. Expected node count: 6,749,360 − 2,889 = 6,746,471.
-- `schema:name` and `schema:propertyID` are both the field name. biosample_jsonld uses `name` for the submitter's attribute name; there is none here, so the field name is used for both.
-- **Original attribute nodes have no `schema:propertyID`**, so `?pv schema:propertyID ?f` selects bsllmner nodes only.
+- Annotation nodes carry `schema:propertyID` = the field name and **no `schema:name`**. Original attribute nodes carry `schema:name` and no `schema:propertyID`. So queries that require `schema:name` see only the submitter's attributes, exactly as before bsllmner was added, and `?pv schema:propertyID ?f` selects bsllmner nodes only. (Decided with the user on 2026-10-08, after review found that a shared `schema:name` would silently mix LLM values into existing attribute queries.)
 - **DefinedTerm**: one `a schema:DefinedTerm` per `term_uri` and one `rdfs:label` per distinct (`term_uri`, `label`) pair, each written once, in the chunk where it first appears. The converter keeps a set of seen pairs in memory (~40k entries).
 
 ### Provenance

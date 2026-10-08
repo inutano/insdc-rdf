@@ -5,8 +5,6 @@
 
 - Annotation <http://ddbj.nig.ac.jp/biosample/SAMD00270091#bsllmner/2026-06_mistral-small3.1-24b-v2/rnaseq_human_5y/cell_line/CVCL_0027>:
   - a: schema:PropertyValue
-  - schema:name:
-    - annotation_name: "cell_line"
   - schema:propertyID:
     - annotation_field: "cell_line"
   - schema:value+:

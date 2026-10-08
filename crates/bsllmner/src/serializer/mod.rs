@@ -120,4 +120,25 @@ mod tests {
         );
         assert_eq!(v[3]["rdfs:label"], nasty);
     }
+
+    #[test]
+    fn test_annotation_nodes_have_no_schema_name() {
+        let rec = record();
+
+        let nt = render(&NTriplesSerializer::new(), None, &[rec.clone()]);
+        assert!(nt.lines().all(|l| !l.contains("<http://schema.org/name>")));
+        assert!(nt
+            .lines()
+            .any(|l| l.ends_with("<http://schema.org/propertyID> \"knockout_gene\" .")));
+
+        let ttl = render(&TurtleSerializer::new(), None, &[rec.clone()]);
+        assert!(!ttl.contains("schema:name"));
+        assert!(ttl.contains("    schema:propertyID \"knockout_gene\" ;"));
+
+        let js = render(&JsonLdSerializer::new(), None, &[rec]);
+        let v: serde_json::Value = serde_json::from_str(&js).unwrap();
+        let node = &v[0]["schema:additionalProperty"][0];
+        assert!(node.get("schema:name").is_none());
+        assert_eq!(node["schema:propertyID"], "knockout_gene");
+    }
 }

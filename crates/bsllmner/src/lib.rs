@@ -186,6 +186,8 @@ mod tests {
         assert_eq!(count("<http://www.w3.org/ns/prov#Activity> ."), 2);
         assert_eq!(count("<http://schema.org/Dataset> ."), 1);
         assert_eq!(count("<http://www.w3.org/ns/prov#wasAssociatedWith>"), 3);
+        // Release title only: annotation nodes carry no schema:name.
+        assert_eq!(count("<http://schema.org/name>"), 1);
         // A term first seen in a skipped entry is still declared, once.
         assert_eq!(
             count("<http://purl.obolibrary.org/obo/MONDO_0004992> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),

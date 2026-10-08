@@ -104,7 +104,6 @@ impl Serializer for JsonLdSerializer {
                     json!({
                         "@id": a.iri,
                         "@type": "schema:PropertyValue",
-                        "schema:name": a.field,
                         "schema:propertyID": a.field,
                         "schema:value": a.values,
                         "schema:valueReference": id(&a.term_uri),

@@ -86,7 +86,6 @@ impl Serializer for NTriplesSerializer {
                 rec.biosample_iri, SCHEMA, a.iri
             )?;
             writeln!(w, "<{}> <{}> <{}PropertyValue> .", a.iri, RDF_TYPE, SCHEMA)?;
-            writeln!(w, "<{}> <{}name> \"{}\" .", a.iri, SCHEMA, esc(&a.field))?;
             writeln!(
                 w,
                 "<{}> <{}propertyID> \"{}\" .",
@@ -148,7 +147,6 @@ mod tests {
         let expected = format!(
             "<http://identifiers.org/biosample/SAMN1> <http://schema.org/additionalProperty> <{n}> .\n\
              <{n}> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/PropertyValue> .\n\
-             <{n}> <http://schema.org/name> \"knockout_gene\" .\n\
              <{n}> <http://schema.org/propertyID> \"knockout_gene\" .\n\
              <{n}> <http://schema.org/value> \"REV-ERB a\" .\n\
              <{n}> <http://schema.org/value> \"REV-ERB b\" .\n\

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns='http://www.w3.org/2000/svg' style='background-color: rgb(255, 255, 255);' width='750px' height='1882px' viewBox='-0.5 -0.5 750 1882'>
+<svg xmlns='http://www.w3.org/2000/svg' style='background-color: rgb(255, 255, 255);' width='750px' height='1812px' viewBox='-0.5 -0.5 750 1812'>
   <style type='text/css'>
      .st0 {fill:#FFCE9F;} .st1 {fill:none;stroke:#000000;stroke-width:2;} .st2
     {opacity:0.6;} .st3 {font-family:&apos;Helvetica&apos;;} .st4
@@ -145,7 +145,7 @@
   <polyline class='st12' points='230,175 250,175 250,245 465,245'/>
   <polygon points='460.3,250.7 459.4,249.7 464.4,245.0 459.4,240.3 460.3,239.3 466.5,245.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 240)'>
-    schema:name
+    schema:propertyID
   </text>
   <g>
     <rect x='470' y='220' width='180' height='50' class='st9'/>
@@ -157,7 +157,7 @@
     </g>
     <g>
       <text x='478' y='230' class='st5 st6 st7' dominant-baseline='middle'>
-        annotation_name
+        annotation_field
       </text>
     </g>
     <g>
@@ -169,19 +169,19 @@
   <polyline class='st12' points='230,175 250,175 250,315 465,315'/>
   <polygon points='460.3,320.7 459.4,319.7 464.4,315.0 459.4,310.3 460.3,309.3 466.5,315.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 310)'>
-    schema:propertyID
+    schema:value +
   </text>
   <g>
     <rect x='470' y='290' width='180' height='50' class='st9'/>
     <polyline points='470,310 470,290 650,290 650,310' class='st2'/>
     <g>
       <text x='478' y='325' class='st3 st4' dominant-baseline='middle'>
-        cell_line
+        HepG2
       </text>
     </g>
     <g>
       <text x='478' y='300' class='st5 st6 st7' dominant-baseline='middle'>
-        annotation_field
+        annotation_value
       </text>
     </g>
     <g>
@@ -193,144 +193,120 @@
   <polyline class='st12' points='230,175 250,175 250,385 465,385'/>
   <polygon points='460.3,390.7 459.4,389.7 464.4,385.0 459.4,380.3 460.3,379.3 466.5,385.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 380)'>
-    schema:value +
+    schema:valueReference
   </text>
   <g>
-    <rect x='470' y='360' width='180' height='50' class='st9'/>
-    <polyline points='470,380 470,360 650,360 650,380' class='st2'/>
     <g>
-      <text x='478' y='395' class='st3 st4' dominant-baseline='middle'>
-        HepG2
+      <path d='M650,402 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M650,402 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+    </g>
+    <g class='st2'>
+      <path d='M470,380 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+    </g>
+    <g transform='translate(-0.5 -0.5)'>
+      <text x='478' y='398' class='st3 st4'>
+        Term
       </text>
     </g>
-    <g>
+    <g transform='translate(-0.5 -0.5)'>
       <text x='478' y='370' class='st5 st6 st7' dominant-baseline='middle'>
-        annotation_value
+        annotation_term
       </text>
     </g>
-    <g>
+    <g transform='translate(-0.5 -0.5)'>
       <text x='642' y='370' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        String
+        URI
       </text>
     </g>
   </g>
   <polyline class='st12' points='230,175 250,175 250,455 465,455'/>
   <polygon points='460.3,460.7 459.4,459.7 464.4,455.0 459.4,450.3 460.3,449.3 466.5,455.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 450)'>
-    schema:valueReference
+    biosample_ont:exactMatch
   </text>
   <g>
+    <rect x='470' y='430' width='180' height='50' class='st9'/>
+    <polyline points='470,450 470,430 650,430 650,450' class='st2'/>
     <g>
-      <path d='M650,472 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M650,472 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
-    </g>
-    <g class='st2'>
-      <path d='M470,450 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
-    </g>
-    <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='468' class='st3 st4'>
-        Term
+      <text x='478' y='465' class='st3 st4' dominant-baseline='middle'>
+        &quot;true&quot;^^xsd:boolean
       </text>
     </g>
-    <g transform='translate(-0.5 -0.5)'>
+    <g>
       <text x='478' y='440' class='st5 st6 st7' dominant-baseline='middle'>
-        annotation_term
+        exact_match
       </text>
     </g>
-    <g transform='translate(-0.5 -0.5)'>
+    <g>
       <text x='642' y='440' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        URI
+        Boolean
       </text>
     </g>
   </g>
   <polyline class='st12' points='230,175 250,175 250,525 465,525'/>
   <polygon points='460.3,530.7 459.4,529.7 464.4,525.0 459.4,520.3 460.3,519.3 466.5,525.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 520)'>
-    biosample_ont:exactMatch
-  </text>
-  <g>
-    <rect x='470' y='500' width='180' height='50' class='st9'/>
-    <polyline points='470,520 470,500 650,500 650,520' class='st2'/>
-    <g>
-      <text x='478' y='535' class='st3 st4' dominant-baseline='middle'>
-        &quot;true&quot;^^xsd:boolean
-      </text>
-    </g>
-    <g>
-      <text x='478' y='510' class='st5 st6 st7' dominant-baseline='middle'>
-        exact_match
-      </text>
-    </g>
-    <g>
-      <text x='642' y='510' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Boolean
-      </text>
-    </g>
-  </g>
-  <polyline class='st12' points='230,175 250,175 250,595 465,595'/>
-  <polygon points='460.3,600.7 459.4,599.7 464.4,595.0 459.4,590.3 460.3,589.3 466.5,595.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 590)'>
     prov:wasGeneratedBy
   </text>
   <g>
     <g>
-      <path d='M650,612 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M650,612 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M650,542 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M650,542 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M470,590 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M470,520 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='608' class='st3 st4'>
+      <text x='478' y='538' class='st3 st4'>
         Run
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='580' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='510' class='st5 st6 st7' dominant-baseline='middle'>
         annotation_run
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='642' y='580' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='510' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
   <g>
     <g>
-      <path d='M230,682 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M230,682 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M230,612 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M230,612 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M50,660 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M50,590 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='678' class='st3 st4'>
+      <text x='58' y='608' class='st3 st4'>
         &lt;http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027&gt;
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='650' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='58' y='580' class='st5 st6 st7' dominant-baseline='middle'>
         Term
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='222' y='650' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='222' y='580' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
-  <polyline class='st11' points='230,665 250,665 250,665 465,665'/>
-  <polygon points='460.3,670.7 459.4,669.7 464.4,665.0 459.4,660.3 460.3,659.3 466.5,665.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 660)'>
+  <polyline class='st11' points='230,595 250,595 250,595 465,595'/>
+  <polygon points='460.3,600.7 459.4,599.7 464.4,595.0 459.4,590.3 460.3,589.3 466.5,595.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 590)'>
     rdf:type
   </text>
   <g>
-    <rect x='470' y='640' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
+    <rect x='470' y='570' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
     <g transform='translate(-0.5 -0.5)'>
       <switch>
         <foreignObject style='overflow: visible; text-align: left' pointer-events='none' width='100%' height='100%' requiredFeatures='http://www.w3.org/TR/SVG11/feature#Extensibility'>
-          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 665px; margin-left: 471px'>
+          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 595px; margin-left: 471px'>
             <div style='box-sizing: border-box; font-size: 0; text-align: center;'>
               <div style='display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal'>
                 <div>
@@ -341,71 +317,71 @@
             </div>
           </div>
         </foreignObject>
-        <text x='560' y='659' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
+        <text x='560' y='589' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
           schema:DefinedTerm
         </text>
       </switch>
     </g>
   </g>
-  <polyline class='st12' points='230,665 250,665 250,735 465,735'/>
-  <polygon points='460.3,740.7 459.4,739.7 464.4,735.0 459.4,730.3 460.3,729.3 466.5,735.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 730)'>
+  <polyline class='st12' points='230,595 250,595 250,665 465,665'/>
+  <polygon points='460.3,670.7 459.4,669.7 464.4,665.0 459.4,660.3 460.3,659.3 466.5,665.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 660)'>
     rdfs:label +
   </text>
   <g>
-    <rect x='470' y='710' width='180' height='50' class='st9'/>
-    <polyline points='470,730 470,710 650,710 650,730' class='st2'/>
+    <rect x='470' y='640' width='180' height='50' class='st9'/>
+    <polyline points='470,660 470,640 650,640 650,660' class='st2'/>
     <g>
-      <text x='478' y='745' class='st3 st4' dominant-baseline='middle'>
+      <text x='478' y='675' class='st3 st4' dominant-baseline='middle'>
         Hep-G2
       </text>
     </g>
     <g>
-      <text x='478' y='720' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='650' class='st5 st6 st7' dominant-baseline='middle'>
         term_label
       </text>
     </g>
     <g>
-      <text x='642' y='720' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='650' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         String
       </text>
     </g>
   </g>
   <g>
     <g>
-      <path d='M230,822 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M230,822 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M230,752 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M230,752 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M50,800 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M50,730 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='818' class='st3 st4'>
+      <text x='58' y='748' class='st3 st4'>
         &lt;https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/#run-rnaseq_human_5y_2021-08&gt;
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='790' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='58' y='720' class='st5 st6 st7' dominant-baseline='middle'>
         Run
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='222' y='790' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='222' y='720' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
-  <polyline class='st11' points='230,805 250,805 250,805 465,805'/>
-  <polygon points='460.3,810.7 459.4,809.7 464.4,805.0 459.4,800.3 460.3,799.3 466.5,805.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 800)'>
+  <polyline class='st11' points='230,735 250,735 250,735 465,735'/>
+  <polygon points='460.3,740.7 459.4,739.7 464.4,735.0 459.4,730.3 460.3,729.3 466.5,735.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 730)'>
     rdf:type
   </text>
   <g>
-    <rect x='470' y='780' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
+    <rect x='470' y='710' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
     <g transform='translate(-0.5 -0.5)'>
       <switch>
         <foreignObject style='overflow: visible; text-align: left' pointer-events='none' width='100%' height='100%' requiredFeatures='http://www.w3.org/TR/SVG11/feature#Extensibility'>
-          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 805px; margin-left: 471px'>
+          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 735px; margin-left: 471px'>
             <div style='box-sizing: border-box; font-size: 0; text-align: center;'>
               <div style='display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal'>
                 <div>
@@ -416,52 +392,76 @@
             </div>
           </div>
         </foreignObject>
-        <text x='560' y='799' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
+        <text x='560' y='729' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
           prov:Activity
         </text>
       </switch>
     </g>
   </g>
-  <polyline class='st12' points='230,805 250,805 250,875 465,875'/>
+  <polyline class='st12' points='230,735 250,735 250,805 465,805'/>
+  <polygon points='460.3,810.7 459.4,809.7 464.4,805.0 459.4,800.3 460.3,799.3 466.5,805.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 800)'>
+    rdfs:label
+  </text>
+  <g>
+    <rect x='470' y='780' width='180' height='50' class='st9'/>
+    <polyline points='470,800 470,780 650,780 650,800' class='st2'/>
+    <g>
+      <text x='478' y='815' class='st3 st4' dominant-baseline='middle'>
+        rnaseq_human_5y_2021-08
+      </text>
+    </g>
+    <g>
+      <text x='478' y='790' class='st5 st6 st7' dominant-baseline='middle'>
+        run_name
+      </text>
+    </g>
+    <g>
+      <text x='642' y='790' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+        String
+      </text>
+    </g>
+  </g>
+  <polyline class='st12' points='230,735 250,735 250,875 465,875'/>
   <polygon points='460.3,880.7 459.4,879.7 464.4,875.0 459.4,870.3 460.3,869.3 466.5,875.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 870)'>
-    rdfs:label
+    prov:startedAtTime
   </text>
   <g>
     <rect x='470' y='850' width='180' height='50' class='st9'/>
     <polyline points='470,870 470,850 650,850 650,870' class='st2'/>
     <g>
       <text x='478' y='885' class='st3 st4' dominant-baseline='middle'>
-        rnaseq_human_5y_2021-08
+        &quot;2026-05-30T17:20:09+00:00&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
       <text x='478' y='860' class='st5 st6 st7' dominant-baseline='middle'>
-        run_name
+        run_started
       </text>
     </g>
     <g>
       <text x='642' y='860' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        String
+        dateTime
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,805 250,805 250,945 465,945'/>
+  <polyline class='st12' points='230,735 250,735 250,945 465,945'/>
   <polygon points='460.3,950.7 459.4,949.7 464.4,945.0 459.4,940.3 460.3,939.3 466.5,945.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 940)'>
-    prov:startedAtTime
+    prov:endedAtTime
   </text>
   <g>
     <rect x='470' y='920' width='180' height='50' class='st9'/>
     <polyline points='470,940 470,920 650,920 650,940' class='st2'/>
     <g>
       <text x='478' y='955' class='st3 st4' dominant-baseline='middle'>
-        &quot;2026-05-30T17:20:09+00:00&quot;^^xsd:dateTime
+        &quot;2026-05-30T22:16:22+00:00&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
       <text x='478' y='930' class='st5 st6 st7' dominant-baseline='middle'>
-        run_started
+        run_ended
       </text>
     </g>
     <g>
@@ -470,147 +470,123 @@
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,805 250,805 250,1015 465,1015'/>
+  <polyline class='st12' points='230,735 250,735 250,1015 465,1015'/>
   <polygon points='460.3,1020.7 459.4,1019.7 464.4,1015.0 459.4,1010.3 460.3,1009.3 466.5,1015.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 1010)'>
-    prov:endedAtTime
-  </text>
-  <g>
-    <rect x='470' y='990' width='180' height='50' class='st9'/>
-    <polyline points='470,1010 470,990 650,990 650,1010' class='st2'/>
-    <g>
-      <text x='478' y='1025' class='st3 st4' dominant-baseline='middle'>
-        &quot;2026-05-30T22:16:22+00:00&quot;^^xsd:dateTime
-      </text>
-    </g>
-    <g>
-      <text x='478' y='1000' class='st5 st6 st7' dominant-baseline='middle'>
-        run_ended
-      </text>
-    </g>
-    <g>
-      <text x='642' y='1000' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        dateTime
-      </text>
-    </g>
-  </g>
-  <polyline class='st12' points='230,805 250,805 250,1085 465,1085'/>
-  <polygon points='460.3,1090.7 459.4,1089.7 464.4,1085.0 459.4,1080.3 460.3,1079.3 466.5,1085.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1080)'>
     prov:wasAssociatedWith +
   </text>
   <g>
     <g>
-      <path d='M650,1102 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st9uri'/>
-      <path d='M650,1102 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M650,1032 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st9uri'/>
+      <path d='M650,1032 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M470,1080 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M470,1010 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1098' class='st3 st4'>
+      <text x='478' y='1028' class='st3 st4'>
         &lt;https://github.com/dbcls/bsllmner-mk2/commit/9a3828811f1ab4bac85615e0e1b2efcc6603265f&gt;
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1070' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='1000' class='st5 st6 st7' dominant-baseline='middle'>
         run_software
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='642' y='1070' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='1000' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,805 250,805 250,1155 465,1155'/>
-  <polygon points='460.3,1160.7 459.4,1159.7 464.4,1155.0 459.4,1150.3 460.3,1149.3 466.5,1155.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1150)'>
+  <polyline class='st12' points='230,735 250,735 250,1085 465,1085'/>
+  <polygon points='460.3,1090.7 459.4,1089.7 464.4,1085.0 459.4,1080.3 460.3,1079.3 466.5,1085.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 1080)'>
     biosample_ont:llmModel
   </text>
   <g>
-    <rect x='470' y='1130' width='180' height='50' class='st9'/>
-    <polyline points='470,1150 470,1130 650,1130 650,1150' class='st2'/>
+    <rect x='470' y='1060' width='180' height='50' class='st9'/>
+    <polyline points='470,1080 470,1060 650,1060 650,1080' class='st2'/>
     <g>
-      <text x='478' y='1165' class='st3 st4' dominant-baseline='middle'>
+      <text x='478' y='1095' class='st3 st4' dominant-baseline='middle'>
         mistral-small3.1:24b
       </text>
     </g>
     <g>
-      <text x='478' y='1140' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='1070' class='st5 st6 st7' dominant-baseline='middle'>
         run_model
       </text>
     </g>
     <g>
-      <text x='642' y='1140' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='1070' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         String
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,805 250,805 250,1225 465,1225'/>
-  <polygon points='460.3,1230.7 459.4,1229.7 464.4,1225.0 459.4,1220.3 460.3,1219.3 466.5,1225.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1220)'>
+  <polyline class='st12' points='230,735 250,735 250,1155 465,1155'/>
+  <polygon points='460.3,1160.7 459.4,1159.7 464.4,1155.0 459.4,1150.3 460.3,1149.3 466.5,1155.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 1150)'>
     schema:isPartOf
   </text>
   <g>
     <g>
-      <path d='M650,1242 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M650,1242 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M650,1172 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M650,1172 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M470,1220 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M470,1150 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1238' class='st3 st4'>
+      <text x='478' y='1168' class='st3 st4'>
         Release
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1210' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='1140' class='st5 st6 st7' dominant-baseline='middle'>
         run_release
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='642' y='1210' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='1140' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
   <g>
     <g>
-      <path d='M230,1312 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
-      <path d='M230,1312 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+      <path d='M230,1242 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st0'/>
+      <path d='M230,1242 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
     </g>
     <g class='st2'>
-      <path d='M50,1290 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+      <path d='M50,1220 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='1308' class='st3 st4'>
+      <text x='58' y='1238' class='st3 st4'>
         &lt;https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/&gt;
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='58' y='1280' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='58' y='1210' class='st5 st6 st7' dominant-baseline='middle'>
         Release
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
-      <text x='222' y='1280' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='222' y='1210' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         URI
       </text>
     </g>
   </g>
-  <polyline class='st11' points='230,1295 250,1295 250,1295 465,1295'/>
-  <polygon points='460.3,1300.7 459.4,1299.7 464.4,1295.0 459.4,1290.3 460.3,1289.3 466.5,1295.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1290)'>
+  <polyline class='st11' points='230,1225 250,1225 250,1225 465,1225'/>
+  <polygon points='460.3,1230.7 459.4,1229.7 464.4,1225.0 459.4,1220.3 460.3,1219.3 466.5,1225.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 1220)'>
     rdf:type
   </text>
   <g>
-    <rect x='470' y='1270' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
+    <rect x='470' y='1200' width='180' height='50' rx='7.5' ry='7.5' fill='#fff4c3' stroke='#000000' stroke-width='2' pointer-events='all'/>
     <g transform='translate(-0.5 -0.5)'>
       <switch>
         <foreignObject style='overflow: visible; text-align: left' pointer-events='none' width='100%' height='100%' requiredFeatures='http://www.w3.org/TR/SVG11/feature#Extensibility'>
-          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 1295px; margin-left: 471px'>
+          <div xmlns='http://www.w3.org/1999/xhtml' style='display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 1225px; margin-left: 471px'>
             <div style='box-sizing: border-box; font-size: 0; text-align: center;'>
               <div style='display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal'>
                 <div>
@@ -621,29 +597,53 @@
             </div>
           </div>
         </foreignObject>
-        <text x='560' y='1289' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
+        <text x='560' y='1219' fill='#000000' font-family='Helvetica' font-size='12px' text-anchor='middle'>
           schema:Dataset
         </text>
       </switch>
     </g>
   </g>
-  <polyline class='st12' points='230,1295 250,1295 250,1365 465,1365'/>
+  <polyline class='st12' points='230,1225 250,1225 250,1295 465,1295'/>
+  <polygon points='460.3,1300.7 459.4,1299.7 464.4,1295.0 459.4,1290.3 460.3,1289.3 466.5,1295.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 1290)'>
+    schema:name
+  </text>
+  <g>
+    <rect x='470' y='1270' width='180' height='50' class='st9'/>
+    <polyline points='470,1290 470,1270 650,1270 650,1290' class='st2'/>
+    <g>
+      <text x='478' y='1305' class='st3 st4' dominant-baseline='middle'>
+        Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample
+        records
+      </text>
+    </g>
+    <g>
+      <text x='478' y='1280' class='st5 st6 st7' dominant-baseline='middle'>
+        release_name
+      </text>
+    </g>
+    <g>
+      <text x='642' y='1280' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+        String
+      </text>
+    </g>
+  </g>
+  <polyline class='st12' points='230,1225 250,1225 250,1365 465,1365'/>
   <polygon points='460.3,1370.7 459.4,1369.7 464.4,1365.0 459.4,1360.3 460.3,1359.3 466.5,1365.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 1360)'>
-    schema:name
+    schema:version
   </text>
   <g>
     <rect x='470' y='1340' width='180' height='50' class='st9'/>
     <polyline points='470,1360 470,1340 650,1340 650,1360' class='st2'/>
     <g>
       <text x='478' y='1375' class='st3 st4' dominant-baseline='middle'>
-        Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample
-        records
+        2026-06_mistral-small3.1-24b-v2
       </text>
     </g>
     <g>
       <text x='478' y='1350' class='st5 st6 st7' dominant-baseline='middle'>
-        release_name
+        release_version
       </text>
     </g>
     <g>
@@ -652,58 +652,63 @@
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,1295 250,1295 250,1435 465,1435'/>
+  <polyline class='st12' points='230,1225 250,1225 250,1435 465,1435'/>
   <polygon points='460.3,1440.7 459.4,1439.7 464.4,1435.0 459.4,1430.3 460.3,1429.3 466.5,1435.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 1430)'>
-    schema:version
+    schema:datePublished
   </text>
   <g>
     <rect x='470' y='1410' width='180' height='50' class='st9'/>
     <polyline points='470,1430 470,1410 650,1410 650,1430' class='st2'/>
     <g>
       <text x='478' y='1445' class='st3 st4' dominant-baseline='middle'>
-        2026-06_mistral-small3.1-24b-v2
-      </text>
-    </g>
-    <g>
-      <text x='478' y='1420' class='st5 st6 st7' dominant-baseline='middle'>
-        release_version
-      </text>
-    </g>
-    <g>
-      <text x='642' y='1420' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        String
-      </text>
-    </g>
-  </g>
-  <polyline class='st12' points='230,1295 250,1295 250,1505 465,1505'/>
-  <polygon points='460.3,1510.7 459.4,1509.7 464.4,1505.0 459.4,1500.3 460.3,1499.3 466.5,1505.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1500)'>
-    schema:datePublished
-  </text>
-  <g>
-    <rect x='470' y='1480' width='180' height='50' class='st9'/>
-    <polyline points='470,1500 470,1480 650,1480 650,1500' class='st2'/>
-    <g>
-      <text x='478' y='1515' class='st3 st4' dominant-baseline='middle'>
         &quot;2026-09-26&quot;^^xsd:date
       </text>
     </g>
     <g>
-      <text x='478' y='1490' class='st5 st6 st7' dominant-baseline='middle'>
+      <text x='478' y='1420' class='st5 st6 st7' dominant-baseline='middle'>
         release_date
       </text>
     </g>
     <g>
-      <text x='642' y='1490' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+      <text x='642' y='1420' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
         Date
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,1295 250,1295 250,1575 465,1575'/>
+  <polyline class='st12' points='230,1225 250,1225 250,1505 465,1505'/>
+  <polygon points='460.3,1510.7 459.4,1509.7 464.4,1505.0 459.4,1500.3 460.3,1499.3 466.5,1505.0'/>
+  <text class='st6 st4' transform='matrix(1 0 0 1 260 1500)'>
+    schema:license
+  </text>
+  <g>
+    <g>
+      <path d='M650,1522 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st9uri'/>
+      <path d='M650,1522 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
+    </g>
+    <g class='st2'>
+      <path d='M470,1500 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
+    </g>
+    <g transform='translate(-0.5 -0.5)'>
+      <text x='478' y='1518' class='st3 st4'>
+        &lt;https://creativecommons.org/licenses/by/4.0/&gt;
+      </text>
+    </g>
+    <g transform='translate(-0.5 -0.5)'>
+      <text x='478' y='1490' class='st5 st6 st7' dominant-baseline='middle'>
+        release_license
+      </text>
+    </g>
+    <g transform='translate(-0.5 -0.5)'>
+      <text x='642' y='1490' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
+        URI
+      </text>
+    </g>
+  </g>
+  <polyline class='st12' points='230,1225 250,1225 250,1575 465,1575'/>
   <polygon points='460.3,1580.7 459.4,1579.7 464.4,1575.0 459.4,1570.3 460.3,1569.3 466.5,1575.0'/>
   <text class='st6 st4' transform='matrix(1 0 0 1 260 1570)'>
-    schema:license
+    schema:citation
   </text>
   <g>
     <g>
@@ -715,12 +720,12 @@
     </g>
     <g transform='translate(-0.5 -0.5)'>
       <text x='478' y='1588' class='st3 st4'>
-        &lt;https://creativecommons.org/licenses/by/4.0/&gt;
+        &lt;https://doi.org/10.1101/2025.02.17.638570&gt;
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
       <text x='478' y='1560' class='st5 st6 st7' dominant-baseline='middle'>
-        release_license
+        release_citation
       </text>
     </g>
     <g transform='translate(-0.5 -0.5)'>
@@ -729,66 +734,37 @@
       </text>
     </g>
   </g>
-  <polyline class='st12' points='230,1295 250,1295 250,1645 465,1645'/>
-  <polygon points='460.3,1650.7 459.4,1649.7 464.4,1645.0 459.4,1640.3 460.3,1639.3 466.5,1645.0'/>
-  <text class='st6 st4' transform='matrix(1 0 0 1 260 1640)'>
-    schema:citation
-  </text>
   <g>
-    <g>
-      <path d='M650,1662 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st9uri'/>
-      <path d='M650,1662 c0,4.4 -3.6,8 -8,8 h-164 c-4.4,0 -8,-3.6 -8,-8 v-34 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v34 z' class='st1'/>
-    </g>
-    <g class='st2'>
-      <path d='M470,1640 v-12 c0,-4.4 3.6,-8 8,-8 h164 c4.4,0 8,3.6 8,8 v12'/>
-    </g>
-    <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1658' class='st3 st4'>
-        &lt;https://doi.org/10.1101/2025.02.17.638570&gt;
-      </text>
-    </g>
-    <g transform='translate(-0.5 -0.5)'>
-      <text x='478' y='1630' class='st5 st6 st7' dominant-baseline='middle'>
-        release_citation
-      </text>
-    </g>
-    <g transform='translate(-0.5 -0.5)'>
-      <text x='642' y='1630' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        URI
-      </text>
-    </g>
-  </g>
-  <g>
-    <text x='60' y='1714' font-size='14px' class='st6'>
+    <text x='60' y='1644' font-size='14px' class='st6'>
       Namespaces
     </text>
-    <text x='60' y='1730' font-size='12px' class='st3'>
+    <text x='60' y='1660' font-size='12px' class='st3'>
       biosample: &lt;http://ddbj.nig.ac.jp/biosample/&gt;
     </text>
-    <text x='60' y='1746' font-size='12px' class='st3'>
+    <text x='60' y='1676' font-size='12px' class='st3'>
       biosample_ont: &lt;http://ddbj.nig.ac.jp/ontologies/biosample/&gt;
     </text>
-    <text x='60' y='1762' font-size='12px' class='st3'>
+    <text x='60' y='1692' font-size='12px' class='st3'>
       idorg_biosample: &lt;http://identifiers.org/biosample/&gt;
     </text>
-    <text x='60' y='1778' font-size='12px' class='st3'>
+    <text x='60' y='1708' font-size='12px' class='st3'>
       schema: &lt;http://schema.org/&gt;
     </text>
-    <text x='60' y='1794' font-size='12px' class='st3'>
+    <text x='60' y='1724' font-size='12px' class='st3'>
       prov: &lt;http://www.w3.org/ns/prov#&gt;
     </text>
-    <text x='60' y='1810' font-size='12px' class='st3'>
+    <text x='60' y='1740' font-size='12px' class='st3'>
       rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
     </text>
-    <text x='60' y='1826' font-size='12px' class='st3'>
+    <text x='60' y='1756' font-size='12px' class='st3'>
       rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
     </text>
-    <text x='60' y='1842' font-size='12px' class='st3'>
+    <text x='60' y='1772' font-size='12px' class='st3'>
       xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;
     </text>
-    <text x='60' y='1858' font-size='12px' class='st3'>
+    <text x='60' y='1788' font-size='12px' class='st3'>
       obo: &lt;http://purl.obolibrary.org/obo/&gt;
     </text>
-    <rect x='50' y='1690' width='380' height='182' fill='none' stroke='#000000' stroke-width='1'/>
+    <rect x='50' y='1620' width='380' height='182' fill='none' stroke='#000000' stroke-width='1'/>
   </g>
 </svg>

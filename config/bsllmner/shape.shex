@@ -13,7 +13,6 @@ PREFIX obo: <http://purl.obolibrary.org/obo/>
 }
 <AnnotationShape> {
   a [ schema:PropertyValue ] ;
-  schema:name xsd:string ;
   schema:propertyID xsd:string ;
   schema:value xsd:string + ;
   schema:valueReference @<TermShape> ;

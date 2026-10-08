@@ -95,7 +95,6 @@ impl Serializer for TurtleSerializer {
                 &a.iri,
                 &[
                     "a schema:PropertyValue".to_string(),
-                    format!("schema:name {}", quoted(&a.field)),
                     format!("schema:propertyID {}", quoted(&a.field)),
                     format!("schema:value {}", values.join(", ")),
                     format!("schema:valueReference <{}>", a.term_uri),
