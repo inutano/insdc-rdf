@@ -124,6 +124,8 @@ idorg:SAMN00000002
   :value "Alistipes putredinis DSM 17216" .
 ```
 
+A record with an organism also links its NCBI Taxonomy IRI with `rdfs:seeAlso <http://identifiers.org/taxonomy/{taxonomy_id}>` and gives the organism name as `biosample_ont:taxonomyName`.
+
 ### SRA
 
 <a href="config/sra/schema.svg"><img src="config/sra/schema.svg" alt="SRA schema" width="750"></a>

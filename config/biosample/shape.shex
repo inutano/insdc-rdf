@@ -5,6 +5,7 @@ PREFIX bioproject_ont: <http://ddbj.nig.ac.jp/ontologies/bioproject/>
 PREFIX idorg_biosample: <http://identifiers.org/biosample/>
 PREFIX idorg_sra: <http://identifiers.org/insdc.sra/>
 PREFIX idorg_bioproject: <http://identifiers.org/bioproject/>
+PREFIX idorg_taxonomy: <http://identifiers.org/taxonomy/>
 PREFIX schema: <http://schema.org/>
 PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -24,7 +25,9 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
   rdfs:seeAlso @<SRAAccessionShape> + ;
   rdfs:seeAlso @<SRASampleShape> + ;
   rdfs:seeAlso @<SRARunShape> + ;
-  rdfs:seeAlso @<BioProjectShape> +
+  rdfs:seeAlso @<BioProjectShape> + ;
+  rdfs:seeAlso IRI ? ;
+  biosample_ont:taxonomyName xsd:string ?
 }
 <SRAStudyShape> {
   a [ dra_ont:Study ]

@@ -5,6 +5,7 @@ bioproject_ont: <http://ddbj.nig.ac.jp/ontologies/bioproject/>
 idorg_biosample: <http://identifiers.org/biosample/>
 idorg_sra: <http://identifiers.org/insdc.sra/>
 idorg_bioproject: <http://identifiers.org/bioproject/>
+idorg_taxonomy: <http://identifiers.org/taxonomy/>
 schema: <http://schema.org/>
 dct: <http://purl.org/dc/terms/>
 rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

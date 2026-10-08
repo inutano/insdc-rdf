@@ -15,6 +15,10 @@
     - sample_attribute: OriginalSampleProperty
   - rdfs:label:
     - label: "24 h after HCV infection"
+  - rdfs:seeAlso?:
+    - taxonomy_id: idorg_taxonomy:9606
+  - biosample_ont:taxonomyName?:
+    - taxonomy_name: "Homo sapiens"
   - rdfs:seeAlso+:
     - sra_study: SRAStudy
   - rdfs:seeAlso+:
