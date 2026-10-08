@@ -361,6 +361,7 @@ dependencies = [
  "flate2",
  "insdc-rdf-bioproject",
  "insdc-rdf-biosample",
+ "insdc-rdf-bsllmner",
  "insdc-rdf-core",
  "insdc-rdf-sra",
  "insdc-rdf-sra-experiment",

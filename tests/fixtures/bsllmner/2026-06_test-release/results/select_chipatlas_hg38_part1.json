@@ -1,0 +1,39 @@
+{
+  "entries": [
+    {
+      "extract": {"accession": "SAMD00004141", "extracted": {"cell_line": "Hela", "chip_antigen": ["REV-ERB a", "REV-ERB b", "POLR2A"]}, "raw_output": "{}", "llm_timing": {"total_duration": 1}},
+      "search_results": {"cell_line": {"Hela": [{"term_uri": "http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0030", "label": "HeLa"}]}},
+      "text2term_results": {},
+      "select_timings": {},
+      "results": {
+        "cell_line": [{"value": "Hela", "term_id": "CVCL:0030", "term_uri": "http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0030", "label": "HeLa", "exact_match": true, "reasoning": "Exact match on oboInOwl:hasRelatedSynonym"}],
+        "chip_antigen": [
+          {"value": "REV-ERB a", "term_id": "NCBIGene:9572", "term_uri": "http://purl.obolibrary.org/obo/NCBIGene_9572", "label": "NR1D1", "exact_match": false, "reasoning": null},
+          {"value": "REV-ERB b", "term_id": "NCBIGene:9572", "term_uri": "http://purl.obolibrary.org/obo/NCBIGene_9572", "label": "NR1D1", "exact_match": false, "reasoning": null},
+          {"value": "POLR2A", "term_id": "NCBIGene:5430", "term_uri": "http://purl.obolibrary.org/obo/NCBIGene_5430", "label": "POLR2A", "exact_match": true, "reasoning": "Exact match on rdfs:label"}
+        ],
+        "tissue": []
+      },
+      "ambiguous_fields": {}
+    },
+    {
+      "extract": {"accession": "SAMN00000001", "extracted": {"tissue": "liver"}},
+      "results": {"tissue": [{"value": "liver", "term_id": "UBERON:0002107", "term_uri": "http://purl.obolibrary.org/obo/UBERON_0002107", "label": "liver", "exact_match": true, "reasoning": "Exact match on rdfs:label"}]},
+      "ambiguous_fields": {}
+    },
+    {
+      "extract": {"accession": "BADACC123", "extracted": {"disease": "cancer"}},
+      "results": {"disease": [{"value": "cancer", "term_id": "MONDO:0004992", "term_uri": "http://purl.obolibrary.org/obo/MONDO_0004992", "label": "cancer", "exact_match": true, "reasoning": "Exact match on rdfs:label"}]},
+      "ambiguous_fields": {}
+    },
+    {
+      "extract": {"accession": "SAMEA6161248", "extracted": {}, "raw_output": null},
+      "results": {},
+      "ambiguous_fields": {}
+    }
+  ],
+  "run_metadata": {"run_name": "chipatlas_hg38_part1", "status": "completed"},
+  "evaluation": null,
+  "performance": {"total_input_entries": 4},
+  "errors": []
+}

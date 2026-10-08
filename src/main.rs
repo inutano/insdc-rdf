@@ -18,7 +18,7 @@ enum Commands {
         #[arg(short = 's', long, default_value = "biosample")]
         source: SourceType,
 
-        /// Path to input file
+        /// Path to input file (for bsllmner: the unpacked RO-Crate directory)
         #[arg(short, long)]
         input: PathBuf,
 
@@ -44,6 +44,7 @@ enum SourceType {
     Sra,
     Bioproject,
     SraExperiment,
+    Bsllmner,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -65,6 +66,9 @@ fn main() -> anyhow::Result<()> {
             }
             SourceType::SraExperiment => {
                 insdc_rdf_sra_experiment::run_convert(&input, &output_dir, chunk_size)
+            }
+            SourceType::Bsllmner => {
+                insdc_rdf_bsllmner::run_convert(&input, &output_dir, chunk_size)
             }
         },
         Commands::Validate { path } => {
