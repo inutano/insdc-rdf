@@ -280,6 +280,7 @@ bundle exec rdf-config --config config/biosample --shex
 bundle exec rdf-config --config config/sra --shex
 bundle exec rdf-config --config config/bioproject --shex
 bundle exec rdf-config --config config/sra-experiment --shex
+bundle exec rdf-config --config config/bsllmner --shex
 ```
 
 ## Benchmark
