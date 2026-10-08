@@ -3,9 +3,9 @@
   - dct:identifier:
     - run_id: "DRR000001"
   - dct:issued?:
-    - run_published: 2010-03-24T03:10:22Z
+    - run_published: '"2010-03-24T03:10:22Z"^^xsd:dateTime'
   - dct:modified?:
-    - run_modified: 2022-09-23T10:09:59Z
+    - run_modified: '"2022-09-23T10:09:59Z"^^xsd:dateTime'
   - rdfs:seeAlso?:
     - run_experiment: SRAExperiment
   - rdfs:seeAlso?:
@@ -22,9 +22,9 @@
   - dct:identifier:
     - experiment_id: "DRX000001"
   - dct:issued?:
-    - experiment_published: 2010-03-24T03:10:22Z
+    - experiment_published: '"2010-03-24T03:10:22Z"^^xsd:dateTime'
   - dct:modified?:
-    - experiment_modified: 2015-01-30T13:21:34Z
+    - experiment_modified: '"2015-01-30T13:21:34Z"^^xsd:dateTime'
   - rdfs:seeAlso?:
     - experiment_sample: SRASample
   - rdfs:seeAlso?:
@@ -39,9 +39,9 @@
   - dct:identifier:
     - sample_id: "DRS000001"
   - dct:issued?:
-    - sample_published: 2010-03-24T03:10:22Z
+    - sample_published: '"2010-03-24T03:10:22Z"^^xsd:dateTime'
   - dct:modified?:
-    - sample_modified: 2025-03-05T04:11:46Z
+    - sample_modified: '"2025-03-05T04:11:46Z"^^xsd:dateTime'
   - rdfs:seeAlso?:
     - sample_biosample: BioSample
 
@@ -50,9 +50,9 @@
   - dct:identifier:
     - study_id: "DRP000001"
   - dct:issued?:
-    - study_published: 2015-07-31T15:20:44Z
+    - study_published: '"2015-07-31T15:20:44Z"^^xsd:dateTime'
   - dct:modified?:
-    - study_modified: 2020-08-25T15:30:25Z
+    - study_modified: '"2020-08-25T15:30:25Z"^^xsd:dateTime'
   - rdfs:seeAlso?:
     - study_bioproject: BioProject
 
@@ -61,9 +61,9 @@
   - dct:identifier:
     - submission_id: "DRA000001"
   - dct:issued?:
-    - submission_published: 2010-03-24T03:10:22Z
+    - submission_published: '"2010-03-24T03:10:22Z"^^xsd:dateTime'
   - dct:modified?:
-    - submission_modified: 2025-03-05T04:11:46Z
+    - submission_modified: '"2025-03-05T04:11:46Z"^^xsd:dateTime'
 
 - BioSample idorg_biosample:SAMD00016353:
   - a: biosample_ont:BioSampleRecord

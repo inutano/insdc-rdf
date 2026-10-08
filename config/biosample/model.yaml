@@ -2,15 +2,15 @@
 - BioSample idorg_biosample:SAMD00222921:
   - a: biosample_ont:BioSampleRecord
   - dct:created:
-    - created: 2020-05-11T01:00:33.453
+    - created: '"2020-05-11T01:00:33.453"^^xsd:dateTime'
   - dct:description:
     - description: "24 h after HCV infection"
   - dct:identifier:
     - biosample_id: "SAMD00222921"
   - dct:issued:
-    - publication_date: 2020-05-10T00:00:00.000
+    - publication_date: '"2020-05-10T00:00:00.000"^^xsd:dateTime'
   - dct:modified:
-    - modified_date: 2020-08-23T09:25:30.630
+    - modified_date: '"2020-08-23T09:25:30.630"^^xsd:dateTime'
   - schema:additionalProperty*:
     - sample_attribute: OriginalSampleProperty
   - rdfs:label:

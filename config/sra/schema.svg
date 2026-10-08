@@ -96,7 +96,7 @@
     <polyline points='470,170 470,150 650,150 650,170' class='st2'/>
     <g>
       <text x='478' y='185' class='st3 st4' dominant-baseline='middle'>
-        2010-03-24 03:10:22 UTC
+        &quot;2010-03-24T03:10:22Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -106,7 +106,7 @@
     </g>
     <g>
       <text x='642' y='160' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -120,7 +120,7 @@
     <polyline points='470,240 470,220 650,220 650,240' class='st2'/>
     <g>
       <text x='478' y='255' class='st3 st4' dominant-baseline='middle'>
-        2022-09-23 10:09:59 UTC
+        &quot;2022-09-23T10:09:59Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -130,7 +130,7 @@
     </g>
     <g>
       <text x='642' y='230' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -364,7 +364,7 @@
     <polyline points='470,800 470,780 650,780 650,800' class='st2'/>
     <g>
       <text x='478' y='815' class='st3 st4' dominant-baseline='middle'>
-        2010-03-24 03:10:22 UTC
+        &quot;2010-03-24T03:10:22Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -374,7 +374,7 @@
     </g>
     <g>
       <text x='642' y='790' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -388,7 +388,7 @@
     <polyline points='470,870 470,850 650,850 650,870' class='st2'/>
     <g>
       <text x='478' y='885' class='st3 st4' dominant-baseline='middle'>
-        2015-01-30 13:21:34 UTC
+        &quot;2015-01-30T13:21:34Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -398,7 +398,7 @@
     </g>
     <g>
       <text x='642' y='860' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -603,7 +603,7 @@
     <polyline points='470,1360 470,1340 650,1340 650,1360' class='st2'/>
     <g>
       <text x='478' y='1375' class='st3 st4' dominant-baseline='middle'>
-        2010-03-24 03:10:22 UTC
+        &quot;2010-03-24T03:10:22Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -613,7 +613,7 @@
     </g>
     <g>
       <text x='642' y='1350' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -627,7 +627,7 @@
     <polyline points='470,1430 470,1410 650,1410 650,1430' class='st2'/>
     <g>
       <text x='478' y='1445' class='st3 st4' dominant-baseline='middle'>
-        2025-03-05 04:11:46 UTC
+        &quot;2025-03-05T04:11:46Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -637,7 +637,7 @@
     </g>
     <g>
       <text x='642' y='1420' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -755,7 +755,7 @@
     <polyline points='470,1710 470,1690 650,1690 650,1710' class='st2'/>
     <g>
       <text x='478' y='1725' class='st3 st4' dominant-baseline='middle'>
-        2015-07-31 15:20:44 UTC
+        &quot;2015-07-31T15:20:44Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -765,7 +765,7 @@
     </g>
     <g>
       <text x='642' y='1700' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -779,7 +779,7 @@
     <polyline points='470,1780 470,1760 650,1760 650,1780' class='st2'/>
     <g>
       <text x='478' y='1795' class='st3 st4' dominant-baseline='middle'>
-        2020-08-25 15:30:25 UTC
+        &quot;2020-08-25T15:30:25Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -789,7 +789,7 @@
     </g>
     <g>
       <text x='642' y='1770' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -907,7 +907,7 @@
     <polyline points='470,2060 470,2040 650,2040 650,2060' class='st2'/>
     <g>
       <text x='478' y='2075' class='st3 st4' dominant-baseline='middle'>
-        2010-03-24 03:10:22 UTC
+        &quot;2010-03-24T03:10:22Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -917,7 +917,7 @@
     </g>
     <g>
       <text x='642' y='2050' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -931,7 +931,7 @@
     <polyline points='470,2130 470,2110 650,2110 650,2130' class='st2'/>
     <g>
       <text x='478' y='2145' class='st3 st4' dominant-baseline='middle'>
-        2025-03-05 04:11:46 UTC
+        &quot;2025-03-05T04:11:46Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -941,7 +941,7 @@
     </g>
     <g>
       <text x='642' y='2120' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>

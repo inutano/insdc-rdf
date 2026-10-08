@@ -11,8 +11,8 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 <SRARunShape> {
   a [ dra_ont:Run ] ;
   dct:identifier xsd:string ;
-  dct:issued xsd:time ? ;
-  dct:modified xsd:time ? ;
+  dct:issued xsd:dateTime ? ;
+  dct:modified xsd:dateTime ? ;
   rdfs:seeAlso @<SRAExperimentShape> ? ;
   rdfs:seeAlso @<SRASampleShape> ? ;
   rdfs:seeAlso @<SRAStudyShape> ? ;
@@ -22,8 +22,8 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 <SRAExperimentShape> {
   a [ dra_ont:Experiment ] ;
   dct:identifier xsd:string ;
-  dct:issued xsd:time ? ;
-  dct:modified xsd:time ? ;
+  dct:issued xsd:dateTime ? ;
+  dct:modified xsd:dateTime ? ;
   rdfs:seeAlso @<SRASampleShape> ? ;
   rdfs:seeAlso @<SRAStudyShape> ? ;
   rdfs:seeAlso @<BioSampleShape> ? ;
@@ -32,22 +32,22 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 <SRASampleShape> {
   a [ dra_ont:Sample ] ;
   dct:identifier xsd:string ;
-  dct:issued xsd:time ? ;
-  dct:modified xsd:time ? ;
+  dct:issued xsd:dateTime ? ;
+  dct:modified xsd:dateTime ? ;
   rdfs:seeAlso @<BioSampleShape> ?
 }
 <SRAStudyShape> {
   a [ dra_ont:Study ] ;
   dct:identifier xsd:string ;
-  dct:issued xsd:time ? ;
-  dct:modified xsd:time ? ;
+  dct:issued xsd:dateTime ? ;
+  dct:modified xsd:dateTime ? ;
   rdfs:seeAlso @<BioProjectShape> ?
 }
 <SRASubmissionShape> {
   a [ dra_ont:Submission ] ;
   dct:identifier xsd:string ;
-  dct:issued xsd:time ? ;
-  dct:modified xsd:time ?
+  dct:issued xsd:dateTime ? ;
+  dct:modified xsd:dateTime ?
 }
 <BioSampleShape> {
   a [ biosample_ont:BioSampleRecord ]

@@ -72,7 +72,7 @@
     <polyline points='470,100 470,80 650,80 650,100' class='st2'/>
     <g>
       <text x='478' y='115' class='st3 st4' dominant-baseline='middle'>
-        2020-05-11 10:00:33 +0900
+        &quot;2020-05-11T01:00:33.453&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -82,7 +82,7 @@
     </g>
     <g>
       <text x='642' y='90' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -144,7 +144,7 @@
     <polyline points='470,310 470,290 650,290 650,310' class='st2'/>
     <g>
       <text x='478' y='325' class='st3 st4' dominant-baseline='middle'>
-        2020-05-10 09:00:00 +0900
+        &quot;2020-05-10T00:00:00.000&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -154,7 +154,7 @@
     </g>
     <g>
       <text x='642' y='300' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
@@ -168,7 +168,7 @@
     <polyline points='470,380 470,360 650,360 650,380' class='st2'/>
     <g>
       <text x='478' y='395' class='st3 st4' dominant-baseline='middle'>
-        2020-08-23 18:25:30 +0900
+        &quot;2020-08-23T09:25:30.630&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -178,7 +178,7 @@
     </g>
     <g>
       <text x='642' y='370' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>
