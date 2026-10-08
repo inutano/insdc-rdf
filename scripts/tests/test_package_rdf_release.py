@@ -268,6 +268,55 @@ def test_chunk_stem_mismatch_aborts(env):
     assert not (env["tmp"] / "out" / (RID + ".partial")).exists()
 
 
+def test_human_size_rounds_before_choosing_unit():
+    assert prr.human_size(1023) == "1023 B"
+    assert prr.human_size(1024) == "1.0 KB"
+    assert prr.human_size(1024 * 1024 - 1) == "1.0 MB"
+    assert prr.human_size(3 * 1024 ** 3) == "3.0 GB"
+
+
+def test_worker_failure_is_package_error(env):
+    import os
+    if os.geteuid() == 0:
+        pytest.skip("root ignores file modes")
+    victim = env["data"] / "alpha" / "ttl" / "chunk_0000.ttl"
+    victim.chmod(0)
+    try:
+        with pytest.raises(prr.PackageError, match="chunk_0000.ttl"):
+            run(env)
+    finally:
+        victim.chmod(0o644)
+    assert not (env["tmp"] / "out" / RID).exists()
+
+
+def test_refuses_existing_tarball_partial(env):
+    spec = copy.deepcopy(env["spec"])
+    spec["tarball"] = True
+    out = env["tmp"] / "out-tp"
+    out.mkdir()
+    (out / (RID + ".tar.gz.partial")).write_bytes(b"x")
+    with pytest.raises(prr.PackageError, match="exists"):
+        run(env, out=out, spec=spec)
+    assert not (out / RID).exists()
+
+
+def test_index_entry_written_after_tarball(env, monkeypatch):
+    spec = copy.deepcopy(env["spec"])
+    spec["tarball"] = True
+    seen = {}
+    real = Path.write_bytes
+
+    def spy(self, data):
+        if self.name.endswith(".index-entry.json"):
+            seen["tar_done"] = (self.parent / (RID + ".tar.gz")).is_file()
+            seen["partial_gone"] = not (self.parent / (RID + ".tar.gz.partial")).exists()
+        return real(self, data)
+
+    monkeypatch.setattr(Path, "write_bytes", spy)
+    run(env, spec=spec)
+    assert seen == {"tar_done": True, "partial_gone": True}
+
+
 def test_tarball(env):
     spec = copy.deepcopy(env["spec"])
     spec["tarball"] = True
@@ -310,7 +359,7 @@ def test_readme(env):
     text = (env["tmp"] / "out" / RID / "README.md").read_text(encoding="utf-8")
     assert "`%s`" % RID in text
     assert "# Test release" in text
-    assert "9" in text.split("## Contents")[1].split("## Download")[0]
+    assert "Total: 9 records, 9 triples, 3 chunks per format." in text
     assert "aws s3 sync --no-sign-request s3://testbucket/releases/%s/" % RID in text
     assert "sha256sum -c --ignore-missing provenance/checksums.sha256" in text
     assert "d41d8cd98f00b204e9800998ecf8427e" in text

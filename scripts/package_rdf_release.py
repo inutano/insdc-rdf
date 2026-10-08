@@ -60,7 +60,8 @@ def human_size(n):
     size = float(n)
     for unit in ("KB", "MB", "GB", "TB"):
         size /= 1024
-        if size < 1024 or unit == "TB":
+        # Pick the unit after rounding, so 1023.97 KB prints as 1.0 MB.
+        if round(size, 1) < 1024 or unit == "TB":
             return "%.1f %s" % (size, unit)
 
 
@@ -78,6 +79,8 @@ def gzip_chunk(args):
                            compresslevel=level, mtime=0) as gz:
             for block in iter(lambda: fin.read(BLOCK), b""):
                 if fmt == "nt":
+                    # A final line without "\n" would be undercounted;
+                    # expected_triples catches that.
                     lines += block.count(b"\n")
                 gz.write(block)
     with open(dst_path, "rb") as f:
@@ -108,6 +111,7 @@ def validate(spec, out_dir, data_root, repo_root):
     targets = [out / rid, out / (rid + ".partial")]
     if spec.get("tarball"):
         targets.append(out / (rid + ".tar.gz"))
+        targets.append(out / (rid + ".tar.gz.partial"))
     for t in targets:
         if t.exists():
             raise PackageError("output already exists, refusing to overwrite: %s" % t)
@@ -362,11 +366,24 @@ def package(spec, out_dir, data_root, repo_root, jobs=4, level=6):
                 tasks.append((str(f), str(dst), n, fmt, level))
 
     hashes = {}
-    with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as ex:
-        for n, fmt, name, size, digest, lines in ex.map(gzip_chunk, tasks):
+    ex = concurrent.futures.ProcessPoolExecutor(max_workers=jobs)
+    futures = [ex.submit(gzip_chunk, t) for t in tasks]
+    try:
+        for fut, task in zip(futures, tasks):
+            try:
+                n, fmt, name, size, digest, lines = fut.result()
+            except OSError as e:
+                raise PackageError("%s: cannot compress %s: %s" % (task[2], task[0], e))
             hashes["%s/%s/%s.gz" % (n, fmt, name)] = digest
             stats[n]["bytes"][fmt] += size
             stats[n]["triples"] += lines
+    except BaseException:
+        # No cancel_futures on Python 3.8: drop every queued task by hand.
+        for f in futures:
+            f.cancel()
+        raise
+    finally:
+        ex.shutdown(wait=True)
 
     for s in sources:
         n = s["name"]
@@ -431,10 +448,13 @@ def package(spec, out_dir, data_root, repo_root, jobs=4, level=6):
 
     if spec.get("tarball"):
         tb = out / (rid + ".tar.gz")
-        with tarfile.open(str(tb), "w:gz") as t:
+        tb_part = out / (rid + ".tar.gz.partial")
+        with tarfile.open(str(tb_part), "w:gz") as t:
             t.add(str(final), arcname=rid)
+        tb_part.rename(tb)
         entry["tarball_bytes"] = tb.stat().st_size
 
+    # Written last: its presence means the whole package completed.
     (out / (rid + ".index-entry.json")).write_bytes(
         (json.dumps(entry, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
     return entry
@@ -454,7 +474,7 @@ def main(argv=None):
         Path(args.out_dir).mkdir(parents=True, exist_ok=True)
         entry = package(spec, args.out_dir, args.data_root, str(repo_root),
                         jobs=args.jobs, level=args.level)
-    except PackageError as e:
+    except (PackageError, OSError) as e:
         print("error: %s" % e, file=sys.stderr)
         return 1
     tsv = (Path(args.out_dir) / entry["release_id"] / "provenance" / "triples.tsv")

@@ -25,12 +25,39 @@ die() { echo "error: $*" >&2; exit 1; }
 
 [[ -f "$DIR/ro-crate-metadata.json" ]] || die "$DIR/ro-crate-metadata.json is missing"
 
-# Trailing slash matters: without it, ...v2 would match ...v2_rdf.
-if [[ -n "$(aws s3 ls "s3://$BUCKET/releases/$ID/")" ]]; then
-  die "s3://$BUCKET/releases/$ID/ already holds objects; releases are immutable"
+# Prints "exists" or "absent"; any other outcome (permissions, network,
+# credentials) is a hard error. `aws s3 ls` exits 1 when nothing matches.
+remote_state() {
+  local out err rc errfile
+  errfile=$(mktemp)
+  rc=0
+  out=$(aws s3 ls "$1" 2>"$errfile") || rc=$?
+  err=$(cat "$errfile")
+  rm -f "$errfile"
+  if [[ $rc -eq 0 && -n "$out" ]]; then
+    echo exists
+  elif [[ $rc -eq 1 && -z "$out" && -z "$err" ]]; then
+    echo absent
+  else
+    echo "error: could not list $1 (exit $rc): $err" >&2
+    exit 1
+  fi
+}
+
+ENTRY="$OUT_DIR/$ID.index-entry.json"
+[[ -f "$ENTRY" ]] || die "$ENTRY is missing; packaging did not complete"
+tb_bytes=$(python3 -c 'import json,sys; v=json.load(open(sys.argv[1])); print("" if v.get("tarball") is None else v["tarball_bytes"])' "$ENTRY")
+if [[ -n "$tb_bytes" ]]; then
+  [[ -f "$TARBALL" ]] || die "$TARBALL is missing"
+  [[ "$(stat -c %s "$TARBALL")" == "$tb_bytes" ]] || die "$TARBALL size differs from tarball_bytes in $ENTRY"
 fi
-if [[ -f "$TARBALL" ]] && [[ -n "$(aws s3 ls "s3://$BUCKET/releases/$ID.tar.gz")" ]]; then
-  die "s3://$BUCKET/releases/$ID.tar.gz already exists; releases are immutable"
+
+# Trailing slash matters: without it, ...v2 would match ...v2_rdf.
+state=$(remote_state "s3://$BUCKET/releases/$ID/")
+[[ "$state" == absent ]] || die "s3://$BUCKET/releases/$ID/ already holds objects; releases are immutable"
+if [[ -f "$TARBALL" ]]; then
+  state=$(remote_state "s3://$BUCKET/releases/$ID.tar.gz")
+  [[ "$state" == absent ]] || die "s3://$BUCKET/releases/$ID.tar.gz already exists; releases are immutable"
 fi
 
 # Every local file must match one of the upload patterns.
