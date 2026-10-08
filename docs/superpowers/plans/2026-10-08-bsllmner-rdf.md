@@ -3024,3 +3024,427 @@ docker run -d --name qlever-insdc --restart unless-stopped -u "$(id -u):$(id -g)
 - [ ] **Step 3: Leave old data in place**
 
 Do not delete `/data2/qlever-insdc`, the April outputs, or `/data1/work/insdc-rdf-202610/input`. Tell the user what could be deleted and how much space each would free (`du -sh`), and let them decide.
+
+---
+
+## Amendment (2026-10-08): publish the RDF to S3
+
+Spec section: "Publishing the RDF to S3". The user decided on the bucket (`biosampleplus`), two releases, all three formats, gzip per chunk, RO-Crate metadata and checksums, and new entries in `index.json`. Task 11's gate and Task 14's upload gate are put to the user in one message.
+
+Extra global constraints for Tasks 12–14:
+- Python scripts run on the system **Python 3.8**: stdlib only, with no 3.9+ syntax or APIs (no `list[str]` at runtime, no `str.removeprefix`, no `|` dict merge). Tests use pytest 8 (`python3 -m pytest scripts/tests -q`).
+- Nothing is uploaded and no bucket object is changed before Task 14 Step 4 has the user's OK.
+
+### Task 12: RDF release packager
+
+**Files:**
+- Create: `scripts/package_rdf_release.py`
+- Create: `scripts/tests/test_package_rdf_release.py`
+- Create: `releases/2026-10_insdc-rdf.json`
+- Create: `releases/2026-06_mistral-small3.1-24b-v2_rdf.json`
+- Create: `scripts/upload_rdf_release.sh`
+- Modify: `README.md` (new section "Published releases", before the roadmap)
+
+**Interfaces:**
+- Produces:
+  - `python3 scripts/package_rdf_release.py SPEC OUT_DIR --data-root DIR [--jobs N] [--level L]`.
+  - Library function `package(spec: dict, out_dir: str, data_root: str, repo_root: str, jobs: int = 4, level: int = 6) -> dict`, which returns the index entry.
+  - It writes `OUT_DIR/<id>/`, `OUT_DIR/<id>.index-entry.json` and, if `spec["tarball"]`, `OUT_DIR/<id>.tar.gz`.
+  - `scripts/upload_rdf_release.sh [--dryrun] OUT_DIR RELEASE_ID`.
+- Consumes:
+  - Each source's converter output under `<data_root>/<source.dir>/`: `nt/`, `ttl/` and `jsonld/` chunk files, plus `manifest.json` (`total_chunks`, `total_records`, `completed_at`) and `progress.json` (`started_at`).
+  - The repo's `config/<source>/` directory.
+
+**Spec file format.** Write both files exactly as below.
+
+`releases/2026-10_insdc-rdf.json`:
+
+```json
+{
+  "release_id": "2026-10_insdc-rdf",
+  "bucket": "biosampleplus",
+  "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
+  "name": "INSDC BioProject, BioSample and SRA metadata as RDF",
+  "description": "RDF conversion of the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 (SRA experiment metadata of 2026-09-13), produced with insdc-rdf: 60,144,760 BioSample, 1,124,118 BioProject, 143,187,558 SRA accession and 41,593,302 SRA experiment records as 5,709,467,473 triples, in N-Triples, Turtle and JSON-LD. The bsllmner-mk2 annotation RDF attaches to the BioSample IRIs of this release.",
+  "date_published": "2026-10-08",
+  "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
+  "authors": [
+    {"id": "#tazro-ohta", "name": "Tazro Ohta", "affiliation": ["#dbcls", "#chiba-ai-med", "#chiba-iaar"]},
+    {"id": "#hirotaka-suetake", "name": "Hirotaka Suetake", "affiliation": ["#sator"]}
+  ],
+  "organizations": [
+    {"id": "#dbcls", "name": "Database Division for Life Science (DBCLS), BioData Science Initiative, National Institute of Genetics, Research Organization of Information and Systems"},
+    {"id": "#chiba-ai-med", "name": "Department of Artificial Intelligence Medicine, Graduate School of Medicine, Chiba University"},
+    {"id": "#chiba-iaar", "name": "Institute for Advanced Academic Research, Chiba University"},
+    {"id": "#sator", "name": "Sator Inc."}
+  ],
+  "software": {
+    "name": "insdc-rdf",
+    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
+    "version": "v0.3.0",
+    "commit": "c3ba3b06db21690760316ca9148299e9fe317c6c",
+    "repository": "https://github.com/inutano/insdc-rdf"
+  },
+  "inputs": [
+    {"id": "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml", "type": "File", "name": "bioproject.xml", "content_size": 4135547517, "date_modified": "2026-10-07T16:28:28Z", "md5": "9a946342a8f6266eebadca80e9577069"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", "type": "File", "name": "biosample_set.xml.gz", "content_size": 4932583454, "date_modified": "2026-10-07T16:18:15Z", "md5": "fe05127ff2390c2ee357a73371d31fc7"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab", "type": "File", "name": "SRA_Accessions.tab", "content_size": 35180332411, "date_modified": "2026-10-07T21:06:16Z", "md5": "56e13836b3e088dd6dc0b9f27661ff4a"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz", "type": "File", "name": "NCBI_SRA_Metadata_Full_20260913.tar.gz", "content_size": 18233005318, "date_modified": "2026-09-14T18:35:45Z", "md5": "e127c60e8aa90f589f2e2fcaeda075a8"}
+  ],
+  "sources": [
+    {"name": "bioproject", "title": "BioProject", "dir": "bioproject", "schema_dir": "config/bioproject", "inputs": ["https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml"], "expected_triples": 5772603},
+    {"name": "biosample", "title": "BioSample", "dir": "biosample", "schema_dir": "config/biosample", "inputs": ["https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz"], "expected_triples": 4031734256},
+    {"name": "sra", "title": "SRA accessions", "dir": "sra", "schema_dir": "config/sra", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"], "expected_triples": 1014701708},
+    {"name": "sra-experiment", "title": "SRA experiments", "dir": "sra-experiment", "schema_dir": "config/sra-experiment", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"], "expected_triples": 657258906}
+  ],
+  "tarball": false,
+  "derived_from": [
+    "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml",
+    "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz",
+    "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab",
+    "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"
+  ],
+  "readme": {
+    "intro": [
+      "This release is the RDF form of the NCBI BioProject, BioSample and SRA metadata dumps, converted with [insdc-rdf](https://github.com/inutano/insdc-rdf). The BioSample model follows the curated schema at <https://github.com/inutano/biosample_jsonld>.",
+      "The bsllmner-mk2 annotation RDF, release `2026-06_mistral-small3.1-24b-v2_rdf` in this bucket, attaches ontology-mapped annotations to the BioSample IRIs of this release. Load both into one graph to query them together."
+    ],
+    "notes": [
+      "`dra_ont:Experiment` subjects come from both `sra` (accession list) and `sra-experiment` (experiment XML); load both for the full set.",
+      "Every triple is in the default graph. The chunks of one source can be loaded in any order."
+    ]
+  }
+}
+```
+
+`releases/2026-06_mistral-small3.1-24b-v2_rdf.json`:
+
+```json
+{
+  "release_id": "2026-06_mistral-small3.1-24b-v2_rdf",
+  "bucket": "biosampleplus",
+  "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
+  "name": "Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample records, as RDF",
+  "description": "RDF conversion of BioSample Plus release 2026-06_mistral-small3.1-24b-v2, produced with insdc-rdf: 6,746,471 ontology-mapped annotations from 4,189,039 result entries, using 38,737 distinct terms, as schema:PropertyValue nodes on BioSample IRIs, with the 311 bsllmner-mk2 runs as prov:Activity provenance. 47,307,387 triples in N-Triples, Turtle and JSON-LD.",
+  "date_published": "2026-10-08",
+  "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
+  "authors": [
+    {"id": "#shuya-ikeda", "name": "Shuya Ikeda", "affiliation": ["#dbcls"]},
+    {"id": "#hirotaka-suetake", "name": "Hirotaka Suetake", "affiliation": ["#sator"]},
+    {"id": "#tazro-ohta", "name": "Tazro Ohta", "affiliation": ["#dbcls", "#chiba-ai-med", "#chiba-iaar"]}
+  ],
+  "organizations": [
+    {"id": "#dbcls", "name": "Database Division for Life Science (DBCLS), BioData Science Initiative, National Institute of Genetics, Research Organization of Information and Systems"},
+    {"id": "#sator", "name": "Sator Inc."},
+    {"id": "#chiba-ai-med", "name": "Department of Artificial Intelligence Medicine, Graduate School of Medicine, Chiba University"},
+    {"id": "#chiba-iaar", "name": "Institute for Advanced Academic Research, Chiba University"}
+  ],
+  "software": {
+    "name": "insdc-rdf",
+    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
+    "version": "v0.3.0-14-g6ea33dc",
+    "commit": "6ea33dc1df3cc198b4f33fec1719999ee224768d",
+    "repository": "https://github.com/inutano/insdc-rdf"
+  },
+  "inputs": [
+    {"id": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/", "type": "Dataset", "name": "BioSample Plus release 2026-06_mistral-small3.1-24b-v2"}
+  ],
+  "sources": [
+    {"name": "bsllmner", "title": "bsllmner-mk2 annotations", "dir": "bsllmner", "schema_dir": "config/bsllmner", "inputs": ["https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/"], "expected_triples": 47307387}
+  ],
+  "tarball": true,
+  "derived_from": ["2026-06_mistral-small3.1-24b-v2"],
+  "readme": {
+    "intro": [
+      "This release is the RDF form of BioSample Plus release [`2026-06_mistral-small3.1-24b-v2`](https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/), converted with [insdc-rdf](https://github.com/inutano/insdc-rdf). Each ontology term bsllmner-mk2 assigned to a BioSample field becomes a `schema:PropertyValue` attached to the BioSample with `schema:additionalProperty`, and each bsllmner-mk2 run becomes a `prov:Activity`.",
+      "The BioSample IRIs are those of the INSDC RDF release `2026-10_insdc-rdf` in this bucket. Load both into one graph to query annotations together with the original BioSample attributes."
+    ],
+    "notes": [
+      "Annotation nodes carry `schema:propertyID` (the field, for example `cell_line`) and no `schema:name`, so queries on the submitters' attributes (`schema:name`) are unaffected by the annotations.",
+      "Term IRIs are written exactly as bsllmner-mk2 produced them, without normalization. The terms carry only `rdf:type schema:DefinedTerm` and `rdfs:label`.",
+      "The ontology files the terms come from are not part of this release. Load the OWL files under `ontology/` of the source crate alongside it to query term hierarchies.",
+      "Cite the bsllmner-mk2 publication, <https://doi.org/10.1101/2025.02.17.638570>, and this release ID."
+    ]
+  }
+}
+```
+
+**`package()` behaviour.** Work in a staging directory, `OUT_DIR/<id>.partial/`, and rename it to `OUT_DIR/<id>/` only at the very end.
+
+Before writing anything, check the following. Any failure exits non-zero with a message naming what is wrong:
+- `OUT_DIR/<id>`, `OUT_DIR/<id>.partial` and, if `tarball` is set, `OUT_DIR/<id>.tar.gz` do not already exist.
+- For each source:
+  - `manifest.json` and `progress.json` exist.
+  - Every one of `nt`, `ttl` and `jsonld` is present as a directory.
+  - Each of the three directories holds exactly `manifest.total_chunks` regular files.
+  - All three directories hold the same chunk stems (`chunk_0000`, …).
+  - `schema_dir` exists under `repo_root`.
+
+Then:
+
+1. **Compress the chunks.** Gzip every chunk to `<id>.partial/<source>/<fmt>/<file>.gz` in parallel, with `concurrent.futures.ProcessPoolExecutor(max_workers=jobs)`.
+   - Each worker uses `gzip.GzipFile(filename="", mode="wb", fileobj=out, compresslevel=level, mtime=0)`. Pass `filename=""` explicitly so that no FNAME field is written.
+   - It streams in 8 MiB blocks, counts `b"\n"` in the input when the format is `nt`, and returns the size and sha256 of the `.gz` it wrote.
+   - A source's triple count is the sum of its nt line counts.
+   - If `expected_triples` is set and differs from the count, exit non-zero with `"<source>: counted N triples, expected M"`. Leave `.partial`, and say in the message that it can be removed.
+2. **Copy provenance and schema files.**
+   - Each source's `manifest.json` goes to `provenance/<source>.manifest.json`, byte for byte.
+   - Each `schema_dir`'s regular files go to `schema/<source>/` (no subdirectories).
+3. **Write `provenance/triples.tsv`:** a header `source\ttriples`, then one line per source in spec order.
+4. **Write `README.md`.** This is UTF-8, generated from the spec and the counts, with these sections in order:
+   - `# <name>`.
+   - A line with `` Release `<id>` · published <date_published> · [<license.name>](<license.id>) ``.
+   - The `readme.intro` paragraphs.
+   - `## Contents`: a table with the columns Source (title), Records (`manifest.total_records`), Triples, Chunks and the gzipped size of each of nt, ttl and jsonld (human-readable, KB/MB/GB/TB with powers of 1024, one decimal place). Numbers use thousands separators (`f"{n:,}"`). After the table comes a total line, then the release layout tree from the spec.
+   - `## Download`:
+     - Say that no AWS account is needed.
+     - If there is a tarball: `curl -O <base_url>/releases/<id>.tar.gz` and `tar xzf <id>.tar.gz`.
+     - Always: one `aws s3 sync --no-sign-request s3://<bucket>/releases/<id>/ ./<id>/ --exclude "*/ttl/*" --exclude "*/jsonld/*"` example, labelled "N-Triples only", and a sentence on swapping the excludes for the other formats.
+     - Always: a single-file `curl -O` example for the first source's `nt/chunk_0000.nt.gz`.
+   - `## Verify`: `cd <id>` and `sha256sum -c --ignore-missing provenance/checksums.sha256`, with a sentence that `--ignore-missing` lets a partial download, such as one format only, be checked.
+   - `## Load into a triplestore`:
+     - Every chunk is a complete RDF document.
+     - Example: `zcat */nt/*.nt.gz | <loader reading N-Triples on stdin>`.
+     - Point to `scripts/qlever_rebuild_index.sh` in the insdc-rdf repository for the QLever recipe used to validate this release.
+   - `## Schema`: `schema/<source>/` holds the rdf-config model, the ShEx shape (`shape.shex`), the diagram (`schema.svg`) and example SPARQL (`sparql.yaml`).
+   - `## Notes`: the `readme.notes` paragraphs, as a bullet list.
+   - `## Provenance`:
+     - A table of the inputs: Input (a markdown link with `name` as the text and `id` as the URL), Last modified, Size (bytes with separators) and MD5. For an input with no `md5`/`content_size`/`date_modified`, show `—`.
+     - Then: "Converted with insdc-rdf `<version>` ([`<commit[:7]>`](<repository>/commit/<commit>))".
+     - Then the per-source conversion start and end times (from `progress.json` `started_at` and `manifest.json` `completed_at`).
+   - `## License and citation`: the license line, then a suggested citation of the form `<name>, release `<id>`. <base_url>/releases/<id>/`.
+   - `## Contact`: `https://github.com/inutano/insdc-rdf/issues`.
+5. **Write `provenance/checksums.sha256`.** It lists `<sha256>  <relpath>` (two spaces), sorted by relpath, for every regular file in the release except `ro-crate-metadata.json` and `provenance/checksums.sha256` itself. Reuse the worker hashes for the `.gz` files.
+6. **Write `ro-crate-metadata.json`.** RO-Crate 1.1: `"@context": "https://w3id.org/ro/crate/1.1/context"`, indent 2, UTF-8, `ensure_ascii=False`. Its `@graph` holds, in this order:
+   - The metadata descriptor (`conformsTo` `https://w3id.org/ro/crate/1.1`, `about` `./`).
+   - The root `./` `Dataset`, with:
+     - `name`, `description`, `datePublished` and `license` (`{"@id": license.id}`).
+     - `author`: the author ids.
+     - `hasPart`: each `<source>/`, then `schema/`, `provenance/` and `README.md`.
+     - `isBasedOn`: the input ids.
+     - `mentions`: the `#convert-<source>` ids.
+   - One `Dataset` per directory, each with `name` and `hasPart`: `<source>/` lists its three format dirs; `<source>/<fmt>/` lists its files; `schema/` lists its source dirs, and `schema/<source>/` lists its files; `provenance/` lists its files.
+   - One `File` per file in the release except `ro-crate-metadata.json`. Each has `name` (the basename), `contentSize` (a decimal **string**), `encodingFormat` and `sha256`.
+     - Gzipped chunks: `["application/n-triples", "application/gzip"]`, `["text/turtle", "application/gzip"]` or `["application/ld+json", "application/gzip"]`.
+     - Other files by extension: `.md` `text/markdown`, `.json` `application/json`, `.tsv` `text/tab-separated-values`, `.sha256` `text/plain`, `.shex` `text/shex`, `.yaml` `application/yaml`, `.svg` `image/svg+xml`. For any other extension, `application/octet-stream`.
+   - One entity per input: `@id` the input id, `@type` the input type, plus `name`, `contentSize` (a string, when `content_size` is given) and `dateModified` (when `date_modified` is given).
+   - The software: `@id` `#<name>-<commit[:7]>`, `@type` `SoftwareApplication`, plus `name`, `description`, `version`, `softwareVersion` (the full commit) and `url` (`<repository>/commit/<commit>`).
+   - One `CreateAction` per source: `@id` `#convert-<source>`, `name` `insdc-rdf convert --source <source>`, `instrument` (the software id), `object` (the source's input ids), `result` (`<source>/`), `startTime`, `endTime` and `actionStatus` `http://schema.org/CompletedActionStatus`.
+   - The `Person` entities, each with `affiliation` as a list of `{"@id": ...}`.
+   - The `Organization` entities.
+   - The license: `@id` license.id, `@type` `CreativeWork`, `name` license.name.
+7. **Rename** `.partial` to `<id>`.
+8. **Tarball.** If `tarball` is set, write `OUT_DIR/<id>.tar.gz` with `tarfile.open(..., "w:gz")`, adding the release directory under the archive name `<id>`. Members must start with `<id>/`, as in the crate tarball.
+9. **Index entry.** Write `OUT_DIR/<id>.index-entry.json` (indent 2) and return it as a dict, with keys in this order:
+   - `release_id`, `kind` (`"rdf"`) and `prefix` (`releases/<id>/`).
+   - `tarball` (`releases/<id>.tar.gz` or `null`).
+   - `name`, `description`, `date_published`, `license` (license.id), `authors` (the names), `ro_crate_profile` (`https://w3id.org/ro/crate/1.1`), `formats` (`["nt","ttl","jsonld"]`), `triple_count` (the sum over sources) and `derived_from`.
+   - `file_count`: every regular file under `<id>/`, including `ro-crate-metadata.json`.
+   - `total_bytes`: the sum of their sizes.
+   - `tarball_bytes`: only when there is a tarball.
+
+`main()` parses the CLI. `repo_root` is the parent of the `scripts/` directory containing the script. `main()` prints a summary (files, bytes, triples per source) and exits 0, or prints the error to stderr and exits 1.
+
+**`scripts/upload_rdf_release.sh [--dryrun] OUT_DIR RELEASE_ID`.**
+- Use `set -euo pipefail`. The bucket comes from `BUCKET` (default `biosampleplus`), and the profile from the usual `AWS_PROFILE`.
+- **Refusals:**
+  - Refuse if `aws s3 ls "s3://$BUCKET/releases/$ID/"` lists anything. Note the trailing slash: without it, `…v2` would match `…v2_rdf`.
+  - Refuse if there is a local tarball and `aws s3 ls "s3://$BUCKET/releases/$ID.tar.gz"` finds it remotely.
+  - Refuse if `OUT_DIR/$ID/ro-crate-metadata.json` is missing.
+- **Upload** with `aws s3 cp --recursive "$OUT_DIR/$ID/" "s3://$BUCKET/releases/$ID/" --exclude "*" --include <pattern> --content-type <type> --cache-control "public, max-age=86400" --no-progress`, once per group:
+
+  | Pattern | Content-Type |
+  |---|---|
+  | `*.gz` | `application/gzip` |
+  | `*.json` | `application/json` |
+  | `*.md` | `text/markdown; charset=utf-8` |
+  | `*.sha256`, `*.tsv`, `*.shex`, `*.yaml` | `text/plain; charset=utf-8` |
+  | `*.svg` | `image/svg+xml` |
+
+- **Before uploading,** fail if any local file under `OUT_DIR/$ID/` matches none of the patterns. Check with `find` against the same extension list.
+- **Tarball:** upload the tarball last, if there is one, with `application/gzip` and the same Cache-Control.
+- **After uploading** (skipped with `--dryrun`), compare the local file count and total bytes with `aws s3 ls --recursive --summarize "s3://$BUCKET/releases/$ID/"`, and exit 1 on a mismatch.
+- **`--dryrun`** passes `--dryrun` to every `aws s3 cp` and still runs the refusal checks.
+- **Not in this script:** the catalog files (`index.json` etc.). Those are uploaded in Task 14.
+
+**README section "Published releases"** (insert before the roadmap). Keep it short:
+- The two releases, with their IDs and a link to `https://biosampleplus.s3.ap-northeast-1.amazonaws.com/index.html`.
+- One sentence each on what they contain.
+- How to produce a release: `python3 scripts/package_rdf_release.py releases/<id>.json <out-dir> --data-root <converter output root>`, then `bash scripts/upload_rdf_release.sh <out-dir> <id>`.
+- That a new NCBI dump becomes a new `releases/YYYY-MM_insdc-rdf.json` and a new release, because releases are immutable.
+
+- [ ] **Step 1: Write the failing tests** in `scripts/tests/test_package_rdf_release.py`.
+
+  Import the module by path, using `importlib.util.spec_from_file_location` on `scripts/package_rdf_release.py`. A fixture builder creates a temporary `data_root` with two sources:
+  - Source `alpha`: 2 chunks. The nt files have 3 and 2 lines, with an escaped quote and a non-ASCII character. There are matching ttl and jsonld files. `manifest.json` has `{"total_chunks": 2, "total_records": 5, "completed_at": "2026-10-08T01:00:00+00:00"}`, and `progress.json` has `started_at`.
+  - Source `beta`: 1 chunk, 4 nt lines.
+
+  It also creates a temporary `repo_root` with `config/alpha/{model.yaml,shape.shex,schema.svg}` and `config/beta/{model.yaml,shape.shex}`, and a spec dict modelled on the files above: two authors, one organization, one File input with md5 and one Dataset input without. Tests:
+
+  1. `test_chunks_round_trip`: every input chunk has a `.gz` at `<id>/<source>/<fmt>/<file>.gz` whose decompressed bytes equal the input.
+  2. `test_gzip_is_deterministic`: two `package()` runs into different `OUT_DIR`s give byte-identical `.gz` files. Each `.gz` has header bytes 4–7 (mtime) equal to zero and FLG (byte 3) without the FNAME bit (0x08).
+  3. `test_checksums_verify`: `sha256sum -c provenance/checksums.sha256`, run with `cwd=<id>`, exits 0. The list excludes `ro-crate-metadata.json` and `provenance/checksums.sha256`, and includes `README.md`, `provenance/triples.tsv`, `provenance/alpha.manifest.json` and `schema/alpha/shape.shex`.
+  4. `test_ro_crate_metadata`:
+     - Every file under `<id>/` except `ro-crate-metadata.json` has exactly one `File` entity, with `contentSize` (a string) and `sha256` matching the disk.
+     - A `.nt.gz` entity has `encodingFormat == ["application/n-triples", "application/gzip"]`.
+     - Root `hasPart` equals `[{"@id": "alpha/"}, {"@id": "beta/"}, {"@id": "schema/"}, {"@id": "provenance/"}, {"@id": "README.md"}]`.
+     - `#convert-alpha` has `startTime`/`endTime` from progress/manifest and `result` `{"@id": "alpha/"}`.
+     - The software `url` ends with the commit.
+     - Every `{"@id": ...}` reference in the graph that starts with `#` or is a relative path resolves to an entity in the graph.
+  5. `test_triple_counts`: `provenance/triples.tsv` is `source\ttriples\nalpha\t5\nbeta\t4\n`, and the returned entry has `triple_count == 9`.
+  6. `test_expected_triples_mismatch_aborts`: with `expected_triples: 6` on alpha, `package()` raises `SystemExit` or a custom error whose message contains `alpha`, `5` and `6`, and no `<id>/` directory exists.
+  7. `test_refuses_existing_output`: an existing `<id>/` raises, and so does an existing `<id>.partial/`, and neither is modified.
+  8. `test_chunk_count_mismatch_aborts`: deleting `alpha/ttl/chunk_0001.ttl` raises an error naming `alpha` and `ttl`, before any `.partial` is created.
+  9. `test_tarball`: with `tarball: true`:
+     - `<id>.tar.gz` exists, every member name starts with `<id>/`, and it contains `<id>/ro-crate-metadata.json`.
+     - The entry's `tarball == "releases/<id>.tar.gz"`, and its `tarball_bytes` equals the file size.
+
+     With `tarball: false`: no tarball, `entry["tarball"] is None`, and there is no `tarball_bytes` key.
+  10. `test_index_entry`:
+      - Keys in the order listed above.
+      - `kind == "rdf"` and `prefix == "releases/<id>/"`.
+      - `file_count` equals the number of regular files under `<id>/`, and `total_bytes` equals their size sum.
+      - `<id>.index-entry.json` equals the returned dict.
+  11. `test_readme`: `README.md` contains the following:
+      - `` `<id>` ``.
+      - `9` in the Contents total.
+      - `aws s3 sync --no-sign-request s3://<bucket>/releases/<id>/`.
+      - `sha256sum -c --ignore-missing provenance/checksums.sha256`.
+      - The md5 of the File input, and `—` for the Dataset input's size.
+      - Every `readme.notes` string.
+  12. `test_cli`: `subprocess.run([sys.executable, "scripts/package_rdf_release.py", spec_path, out, "--data-root", root, "--jobs", "2"])` exits 0, and an injected mismatch exits 1 with the message on stderr. Point `repo_root` at the fixture by copying the script into `<tmp_repo>/scripts/`.
+  13. `test_committed_specs`: both `releases/*.json` files in the real repo load and have every required key. Each source's `schema_dir` exists in the real repo, each source's `inputs` ids are among `inputs[].id`, the `release_id` matches `^[0-9]{4}-[0-9]{2}_[A-Za-z0-9._-]+$`, and `software.commit` is 40 hex characters and an ancestor of HEAD (`git merge-base --is-ancestor`).
+
+- [ ] **Step 2: Run the tests and see them fail**
+
+  Run: `python3 -m pytest scripts/tests -q`
+  Expected: errors importing the missing module, or the tests failing.
+
+- [ ] **Step 3: Write `scripts/package_rdf_release.py`, the two spec files and `scripts/upload_rdf_release.sh`**
+
+- [ ] **Step 4: Run the tests and see them pass**
+
+  Run: `python3 -m pytest scripts/tests -q && bash -n scripts/upload_rdf_release.sh`
+  Expected: 13 passed, and no syntax error.
+
+- [ ] **Step 5: Smoke-test on real data, without writing to /data**
+
+  ```bash
+  SP=<scratchpad>
+  python3 scripts/package_rdf_release.py releases/2026-06_mistral-small3.1-24b-v2_rdf.json $SP/pkg-smoke --data-root $SP/pkg-smoke-root --jobs 4
+  ```
+
+  Here `pkg-smoke-root/bsllmner` is a copy of the fixture conversion: run `./target/debug/insdc-rdf convert --source bsllmner --input tests/fixtures/bsllmner/2026-06_test-release --output-dir $SP/pkg-smoke-root/bsllmner`. With the real spec this must fail with `bsllmner: counted N triples, expected 47307387`. That proves the guard works. Then run it again with a copy of the spec whose `expected_triples` is removed, and check `sha256sum -c` in the output.
+
+- [ ] **Step 6: Commit**
+
+  ```bash
+  git add scripts/package_rdf_release.py scripts/tests/test_package_rdf_release.py scripts/upload_rdf_release.sh releases/ README.md
+  git commit -m "feat: package and upload RDF releases for the biosampleplus bucket
+
+  Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+  ```
+
+### Task 13: Catalog files for the bucket
+
+The bucket's `index.json`, `index.html`, `README.md` and `SOURCES.md` are not in any repository on this workstation. The originals were downloaded from the bucket into a scratch git repository (`<scratchpad>/bucket-site/`, first commit = the live files). Edit them there and commit there. Only `scripts/catalog_add_release.py` and its test are committed to the insdc-rdf branch.
+
+**Files:**
+- Create: `scripts/catalog_add_release.py`, `scripts/tests/test_catalog_add_release.py` (insdc-rdf repo)
+- Modify: `<scratchpad>/bucket-site/{index.html,README.md,SOURCES.md}` (scratch repo)
+
+**`catalog_add_release.py INDEX_JSON ENTRY_JSON... [--updated YYYY-MM-DD]`** rewrites `INDEX_JSON` in place:
+- Each entry is appended to `releases`, in argument order. It refuses (exits 1, file untouched) if any `release_id` is already present.
+- It sets `updated` (default: today's UTC date).
+- Every existing key and entry stays as it is, in its order. Output uses indent 2, `ensure_ascii=False` and a trailing newline.
+
+Tests:
+- Appending two entries.
+- Refusing a duplicate (file unchanged byte for byte).
+- Leaving existing entries unchanged.
+- The `--updated` flag.
+
+**`index.html` changes.** All text goes in through `textContent` or `createTextNode`, never `innerHTML`.
+- `renderRelease(r, all)` takes the full release list.
+- When `r.kind === "rdf"`:
+  - Metadata: Published; Triples (`num(r.triple_count)`); Formats (`r.formats.join(" · ")`); Files; Size (`bytes(r.total_bytes)`); and Archive only if `r.tarball_bytes != null`.
+  - If `r.tarball`: the same archive button as the crates, then a command block of `curl -O …`, `tar xzf <id>.tar.gz` and `cd <id> && sha256sum -c provenance/checksums.sha256`.
+  - Without a tarball: no button, and a command block of `aws s3 sync --no-sign-request s3://biosampleplus/<prefix> ./<id>/ --exclude "*/ttl/*" --exclude "*/jsonld/*"`, then `cd <id> && sha256sum -c --ignore-missing provenance/checksums.sha256`. The command block is preceded by the comment line `# N-Triples only; drop the excludes for all formats`.
+  - The `aws s3 ls` browse block, as for crates.
+  - Links: `ro-crate-metadata.json`, Release README and `checksums.sha256`. No `run_index.tsv`.
+  - A "Derived from:" line before the links. An item equal to a `release_id` in `all` links to `#release-<id>`. An http(s) URL item links to itself, with its last path segment as the text. Separate items with ", ".
+- Crate entries (no `kind`, or `kind !== "rdf"`) render exactly as now.
+- Header lede: add one sentence, "RDF releases carry these annotations, and the INSDC BioSample, BioProject and SRA metadata they attach to, as gzipped N-Triples, Turtle and JSON-LD for loading into a triplestore."
+- Add a `github.com/inutano/insdc-rdf` badge.
+- "About this data": scope the tarball note to crates, and add a note that RDF chunks are gzipped one by one, so syncing only the format you need is the fast path.
+- Footer: add that RDF releases are produced by [insdc-rdf](https://github.com/inutano/insdc-rdf).
+
+**`README.md` changes.**
+- Contents tree: add the RDF release layout (`<source>/<fmt>/chunk_NNNN.<fmt>.gz`, `schema/`, `provenance/{<source>.manifest.json,triples.tsv,checksums.sha256}`, `README.md`, `ro-crate-metadata.json`), stating that RDF releases have `kind: "rdf"` in `index.json`.
+- Download: an "RDF releases" paragraph with the per-format sync and `sha256sum -c --ignore-missing`.
+- Software: add insdc-rdf.
+
+**`SOURCES.md` changes.**
+- Add a BioProject row to "Input metadata" (NCBI / NLM, "As above").
+- Add a section "## RDF releases":
+  - They are produced by insdc-rdf from the NCBI dumps listed in each release's README and `ro-crate-metadata.json`.
+  - The annotation RDF references ontology term IRIs and labels but does not redistribute ontology files; those stay in the crates under `ontology/`.
+- Software: add `insdc-rdf (https://github.com/inutano/insdc-rdf)`. Do not state a license for it; the repository declares none. This is flagged to the user.
+- Do not change the ontology table. Gaps there are reported to the user, not fixed here.
+
+- [ ] **Step 1:** Write the failing test for `catalog_add_release.py`, run it and see it fail. Write the script, run the test and see it pass. Commit it to the insdc-rdf branch: `feat: add script that appends release entries to the bucket catalog`.
+- [ ] **Step 2:** Make the `index.html`, `README.md` and `SOURCES.md` edits in the scratch repo.
+- [ ] **Step 3:** Render-check `index.html` against a test catalog:
+  - Build a test `index.json` in a temporary copy: the live one plus the two entries from `<scratchpad>/pkg-smoke` or hand-written ones with the same keys (one with a tarball, one without).
+  - Serve it with `python3 -m http.server`, and capture it with `firefox --headless --screenshot <scratchpad>/catalog-render.png --window-size 1000,3000 http://127.0.0.1:<port>/index.html`.
+  - Check the PNG shows four cards, newest first: `2026-10_insdc-rdf`, `…v2_rdf`, `…v2` and the superseded one. The INSDC card must have no archive button and must show the sync command. The crate cards must be unchanged.
+  - Also check the no-JS-error path in node: extract the script, stub `document`/`fetch` minimally, and assert that `renderRelease` runs for all four entries without throwing.
+- [ ] **Step 4:** Commit the edits in the scratch repo (`git -C <scratchpad>/bucket-site commit -am "Catalog: RDF releases"`).
+
+### Task 14: Package, verify and upload (controller)
+
+- [ ] **Step 1: Package.** Wait until the QLever index build has left its parse phase (its index log shows past "Triples parsed"), so the two jobs do not compete for `/data3` reads. Then set `date_published` in both spec files to today's date (UTC), and commit (`chore: set release dates`). Then run:
+
+  ```bash
+  OUT=/data3/insdc-rdf-202610
+  python3 scripts/package_rdf_release.py releases/2026-06_mistral-small3.1-24b-v2_rdf.json $OUT/release-staging --data-root $OUT --jobs 8
+  python3 scripts/package_rdf_release.py releases/2026-10_insdc-rdf.json $OUT/release-staging --data-root $OUT --jobs 8
+  ```
+
+  Expected:
+  - Exit 0 for both runs.
+  - Triples: 47,307,387 and 5,709,467,473. The packager checks `expected_triples` itself.
+  - Sizes: about 0.5 GB and 60–70 GB.
+- [ ] **Step 2: Verify.**
+  - `(cd $OUT/release-staging/<id> && sha256sum -c --quiet provenance/checksums.sha256)` for both releases.
+  - `gzip -t` on 5 random chunks per source.
+  - `tar tzf <id>.tar.gz | head`.
+  - Check that `ro-crate-metadata.json` loads with `python3 -m json.tool`.
+- [ ] **Step 3: Build the catalog.**
+  - Copy `<scratchpad>/bucket-site/` files to `$OUT/release-staging/bucket/`.
+  - Run `python3 scripts/catalog_add_release.py $OUT/release-staging/bucket/index.json $OUT/release-staging/2026-06_mistral-small3.1-24b-v2_rdf.index-entry.json $OUT/release-staging/2026-10_insdc-rdf.index-entry.json`.
+  - Render-check as in Task 13 Step 3, with the real entries.
+  - `bash scripts/upload_rdf_release.sh --dryrun $OUT/release-staging <id>` for both releases.
+- [ ] **Step 4: Gate.**
+  - The final review is clean, and the branch has been pushed or merged per the user's choice in finishing-a-development-branch, so the commit URLs resolve.
+  - Then put the Task 11 question and the upload question to the user together. The upload question shows the release sizes, file counts, catalog diff, render screenshot and the rulings to confirm (licenses, authors).
+  - **No upload without an explicit OK.**
+- [ ] **Step 5: Upload.**
+  - `bash scripts/upload_rdf_release.sh $OUT/release-staging 2026-06_mistral-small3.1-24b-v2_rdf`, then the same for `2026-10_insdc-rdf`.
+  - Then the catalog:
+
+  ```bash
+  B=s3://biosampleplus; S=$OUT/release-staging/bucket
+  aws s3 cp $S/index.json  $B/index.json  --content-type application/json --cache-control "public, max-age=300"
+  aws s3 cp $S/index.html  $B/index.html  --content-type "text/html; charset=utf-8" --cache-control "public, max-age=300"
+  aws s3 cp $S/README.md   $B/README.md   --content-type "text/markdown; charset=utf-8" --cache-control "public, max-age=3600"
+  aws s3 cp $S/SOURCES.md  $B/SOURCES.md  --content-type "text/markdown; charset=utf-8" --cache-control "public, max-age=3600"
+  ```
+
+- [ ] **Step 6: Check the live bucket.**
+  - `curl -sI` a chunk, the tarball and `index.json`; check Content-Type and Cache-Control, and that there is no Content-Encoding.
+  - Download one chunk anonymously and `sha256sum` it against `checksums.sha256`.
+  - Load `index.html` with the headless screenshot.
+- [ ] **Step 7:** Tell the user:
+  - Where the edited catalog sources are: `$OUT/release-staging/bucket/`, plus the scratch repo's diff.
+  - That `release-staging` can be deleted after the upload, and its size.

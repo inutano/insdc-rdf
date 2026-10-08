@@ -204,3 +204,113 @@ The RO-Crate ships the 10 ontology files that bsllmner resolved terms against (`
 - Add the ontology recommendation, the license and citation note for the release, and the known limitations.
 - Update the summary and record-count tables to the 2026-10 data.
 - Replace the roadmap item "bsllmner-mk2 — … enriches `OriginalSampleProperty` with `valueReference` and `AnnotatedSampleType`" with a description of what was built.
+
+## Publishing the RDF to S3 (added 2026-10-08)
+
+Decided with the user on 2026-10-08: once the RDF is built and validated, publish it in the public `biosampleplus` bucket (`ap-northeast-1`) alongside the bsllmner-mk2 crates, as two new releases.
+
+| Release ID | Contents | Tarball |
+|---|---|---|
+| `2026-06_mistral-small3.1-24b-v2_rdf` | The bsllmner annotation RDF converted from crate `2026-06_mistral-small3.1-24b-v2`. | Yes (`releases/<id>.tar.gz`) |
+| `2026-10_insdc-rdf` | The INSDC RDF: BioProject, BioSample, SRA and SRA experiment. | No: about 65 GB. It is downloaded by sync. |
+
+The two are separate because the annotation RDF follows the crate releases and the INSDC RDF follows the NCBI dumps.
+
+- **Formats:** all three formats (N-Triples, Turtle and JSON-LD). Each converter chunk is gzipped separately, with no file name or timestamp in the gzip header, so packaging the same input twice gives identical bytes.
+- **Ontology N-Triples are not published.** The crate already ships the OWL files under `ontology/`, and the release README points to them.
+- **Immutable:** like the crates, a published release is never edited. A later NCBI dump becomes a new `YYYY-MM_insdc-rdf` release.
+
+### Release layout
+
+```
+releases/<release-id>/
+├── ro-crate-metadata.json      RO-Crate 1.1
+├── README.md                   contents, counts, download/load/verify commands, provenance, license, citation
+├── <source>/nt/chunk_NNNN.nt.gz
+├── <source>/ttl/chunk_NNNN.ttl.gz
+├── <source>/jsonld/chunk_NNNN.jsonld.gz
+├── schema/<source>/            the repo's config/<source>/ files (rdf-config model, ShEx, schema.svg, example SPARQL)
+└── provenance/
+    ├── <source>.manifest.json  the converter's manifest.json
+    ├── triples.tsv             source <TAB> triples (counted from the N-Triples)
+    └── checksums.sha256        sha256 of every file except ro-crate-metadata.json and itself
+```
+
+`<source>` is `bioproject`, `biosample`, `sra` and `sra-experiment` for the INSDC release, and `bsllmner` for the annotation release.
+
+### RO-Crate metadata
+
+The metadata follows the crate's conventions:
+- `contentSize` is a string, and `sha256` is a property on each `File`.
+- `author` points to `Person` entities, each with an `affiliation` `Organization`.
+- The license is a `CreativeWork`.
+
+What it contains:
+- **Root `./` `Dataset`:**
+  - `name`, `description`, `datePublished`, `license` and `author`.
+  - `hasPart`: the top-level directories and `README.md`.
+  - `isBasedOn`: the inputs.
+  - `mentions`: one `CreateAction` per source.
+- **Directories:** one `Dataset` per directory, each with `hasPart`.
+- **Files:** one `File` per file, with `name`, `contentSize`, `sha256` and `encodingFormat`. For a gzipped chunk, `encodingFormat` is a list: the RDF media type first (`application/n-triples`, `text/turtle` or `application/ld+json`), then `application/gzip`.
+- **Inputs:**
+  - INSDC: each NCBI dump is a `File` whose `@id` is its download URL, with `name`, `contentSize` and `dateModified` (from the HTTP `Last-Modified`).
+  - Annotation release: the source crate is a `Dataset` whose `@id` is its release URL.
+- **Software:** `insdc-rdf` is a `SoftwareApplication`.
+  - `softwareVersion` is the full commit hash.
+  - `version` is the `git describe` string.
+  - `url` is `https://github.com/inutano/insdc-rdf/commit/<hash>`.
+- **`CreateAction` for each source:**
+  - `instrument`: the software.
+  - `object`: the inputs.
+  - `result`: the source directory.
+  - `startTime` comes from `progress.json` `started_at`, and `endTime` from `manifest.json` `completed_at`.
+
+Rulings to be confirmed by the user at the upload gate:
+- Both releases are CC-BY-4.0, the bucket-wide license.
+- Authors of the annotation release are the crate's authors: Shuya Ikeda, Hirotaka Suetake and Tazro Ohta.
+- Authors of the INSDC release are the `insdc-rdf` contributors: Tazro Ohta and Hirotaka Suetake.
+
+### Catalog
+
+Each release adds one entry to `index.json` `releases`, with the existing fields plus the following:
+- `kind`: `"rdf"`.
+- `formats`: `["nt", "ttl", "jsonld"]`.
+- `triple_count`.
+- `derived_from`: the release IDs or input URLs.
+- `tarball`: `null` when there is none.
+
+`run_count` is left out of these entries, and `schema_version` stays 1.
+
+`index.html` renders RDF entries as follows:
+- The metadata shows Triples and Formats.
+- With no tarball, there is no archive button. Instead it shows a per-format `aws s3 sync --no-sign-request` command and `sha256sum -c --ignore-missing provenance/checksums.sha256`.
+- The crate-only `run_index.tsv` link is not shown.
+- A "Derived from" link points to the source release's card.
+
+Other changes:
+- The header, the "About this data" notes and the footer mention the RDF releases and `insdc-rdf`.
+- The bucket `README.md` gains the RDF release layout and download commands.
+- `SOURCES.md` gains BioProject, and states that the RDF releases are produced by `insdc-rdf` and reference ontology term IRIs without shipping ontology files.
+
+The live versions of these four files were not found in any repository on this workstation. The edited copies are kept with the staged releases, and the user is told where they are.
+
+### Upload
+
+The upload waits for all of these:
+1. The QLever validation on `:7011` passes.
+2. The final review is clean.
+3. The branch is pushed, so the commit URLs in the metadata resolve.
+4. The user gives an explicit OK.
+
+Upload order: release objects first, then the tarball, then `index.json`, `index.html`, `README.md` and `SOURCES.md`, so the catalog never points to objects that are missing.
+
+Object metadata matches the existing objects:
+
+| Objects | Cache-Control | Content-Type |
+|---|---|---|
+| Release files | `public, max-age=86400` | `.gz`: `application/gzip`; `.json`: `application/json`; `.md`: `text/markdown; charset=utf-8`; `.sha256`, `.tsv`, `.shex`, `.yaml`: `text/plain; charset=utf-8`; `.svg`: `image/svg+xml` |
+| `index.json`, `index.html` | `public, max-age=300` | as above |
+| `README.md`, `SOURCES.md` | `public, max-age=3600` | `text/markdown; charset=utf-8` |
+
+The `.gz` objects get no `Content-Encoding`, so they download as the gzip files they are.
