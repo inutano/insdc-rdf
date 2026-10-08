@@ -37,13 +37,13 @@
      "software": {
        "name": "insdc-rdf",
        "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
-       "version": "v0.3.0-20-g458d813",
-       "commit": "458d813aa491b5810f331786789b482685d6ee83",
+       "version": "v0.3.0-27-ga5600bc",
+       "commit": "a5600bced7c65315c9e1686319f13e4e918d43a8",
        "repository": "https://github.com/inutano/insdc-rdf"
      }}
   ],
   "tarball": false,
-  "qlever_recipe_url": "https://github.com/inutano/insdc-rdf/blob/b3b3361755343c159ff48309d169d4f66af748c8/scripts/qlever_rebuild_index.sh",
+  "qlever_recipe_url": "https://github.com/inutano/insdc-rdf/blob/374d5fba124b2c5b500129f30ec714bab2fc661f/scripts/qlever_rebuild_index.sh",
   "derived_from": [
     "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml",
     "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz",

@@ -31,7 +31,7 @@
     {"name": "bsllmner", "title": "bsllmner-mk2 annotations", "dir": "bsllmner", "schema_dir": "config/bsllmner", "inputs": ["https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/"], "expected_triples": 47307387}
   ],
   "tarball": true,
-  "qlever_recipe_url": "https://github.com/inutano/insdc-rdf/blob/b3b3361755343c159ff48309d169d4f66af748c8/scripts/qlever_rebuild_index.sh",
+  "qlever_recipe_url": "https://github.com/inutano/insdc-rdf/blob/374d5fba124b2c5b500129f30ec714bab2fc661f/scripts/qlever_rebuild_index.sh",
   "derived_from": ["2026-06_mistral-small3.1-24b-v2"],
   "readme": {
     "intro": [
