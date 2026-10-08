@@ -243,9 +243,9 @@ def build_readme(spec, stats, tree_lines):
             "one or streamed together. For example, with a loader that reads "
             "N-Triples on stdin:", "", "```sh",
             "zcat */nt/*.nt.gz | <loader reading N-Triples on stdin>", "```", "",
-            "The QLever recipe used to validate this release is "
-            "[`scripts/qlever_rebuild_index.sh`](%s). It reads the `<source>/nt/` "
-            "directories of the release as downloaded." % spec["qlever_recipe_url"], ""]
+            "A QLever recipe for loading this release, with the same index settings "
+            "used to validate it, is [scripts/qlever_rebuild_index.sh](%s)."
+            % spec["qlever_recipe_url"], ""]
 
     out += ["## Schema", "",
             "`schema/<source>/` holds the rdf-config model, the ShEx shape "

@@ -3,6 +3,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -426,9 +427,20 @@ def test_readme_citation_and_terms(env):
 
 def test_readme_links_pinned_qlever_recipe(env):
     run(env)
-    load = "\n".join(_section(_readme(env), "## Load into a triplestore"))
-    assert "[`scripts/qlever_rebuild_index.sh`](%s)" % RECIPE in load
-    assert "insdc-rdf repository" not in load
+    load = _section(_readme(env), "## Load into a triplestore")
+    assert load == [
+        "",
+        "Every chunk is a complete RDF document, so chunks can be loaded one by one or "
+        "streamed together. For example, with a loader that reads N-Triples on stdin:",
+        "",
+        "```sh",
+        "zcat */nt/*.nt.gz | <loader reading N-Triples on stdin>",
+        "```",
+        "",
+        "A QLever recipe for loading this release, with the same index settings used to "
+        "validate it, is [scripts/qlever_rebuild_index.sh](%s)." % RECIPE,
+        "",
+    ]
 
 
 @pytest.mark.parametrize("missing", ["terms", "qlever_recipe_url"])
@@ -547,7 +559,31 @@ def test_cli(env):
     assert "alpha: counted 5 triples, expected 6" in r.stderr
 
 
-def test_committed_specs():
+def _pinned_recipe_lists(commit, tmp):
+    """Run the recipe at `commit` with --list-inputs on a release-style nt/ directory."""
+    tmp.mkdir(parents=True)
+    blob = subprocess.run(["git", "show", "%s:scripts/qlever_rebuild_index.sh" % commit],
+                          cwd=str(REAL_REPO), stdout=subprocess.PIPE)
+    assert blob.returncode == 0, commit
+    script = tmp / "qlever_rebuild_index.sh"
+    script.write_bytes(blob.stdout)
+    nt = tmp / "bsllmner" / "nt"
+    nt.mkdir(parents=True)
+    chunk = nt / "chunk_0000.nt.gz"
+    chunk.write_bytes(gzip.compress(b'<http://e/a> <http://e/p> "x" .\n'))
+    # Should an old version try to build an index, it meets a docker that refuses.
+    bindir = tmp / "bin"
+    bindir.mkdir()
+    (bindir / "docker").write_text("#!/bin/sh\necho docker must not run >&2\nexit 99\n")
+    (bindir / "docker").chmod(0o755)
+    env = dict(os.environ, PATH="%s:%s" % (bindir, os.environ["PATH"]))
+    r = subprocess.run(["bash", str(script), "--list-inputs", str(nt)], env=env,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       universal_newlines=True, timeout=60)
+    return r.returncode == 0 and r.stdout.splitlines() == [str(chunk)]
+
+
+def test_committed_specs(tmp_path):
     paths = sorted((REAL_REPO / "releases").glob("*.json"))
     assert len(paths) >= 2
     required = ["release_id", "bucket", "base_url", "name", "description",
@@ -563,7 +599,10 @@ def test_committed_specs():
         for s in spec["sources"]:
             assert (REAL_REPO / s["schema_dir"]).is_dir()
             assert set(s["inputs"]) <= ids
-        assert spec["readme"]["terms"], (p.name, "readme.terms")
+        terms = spec["readme"].get("terms")
+        assert isinstance(terms, list) and terms, (p.name, "readme.terms")
+        for t in terms:
+            assert isinstance(t, str) and t.strip(), (p.name, "readme.terms", t)
         softwares = [spec["software"]] + [s["software"] for s in spec["sources"]
                                           if "software" in s]
         for sw in softwares:
@@ -588,6 +627,4 @@ def test_committed_specs():
         blob = "%s:scripts/qlever_rebuild_index.sh" % recipe_commit
         r = subprocess.run(["git", "cat-file", "-e", blob], cwd=str(REAL_REPO))
         assert r.returncode == 0, (p.name, blob)
-        script = subprocess.run(["git", "show", blob], cwd=str(REAL_REPO),
-                                stdout=subprocess.PIPE, universal_newlines=True).stdout
-        assert "nt.gz" in script, (p.name, blob)
+        assert _pinned_recipe_lists(recipe_commit, tmp_path / p.stem), (p.name, blob)
