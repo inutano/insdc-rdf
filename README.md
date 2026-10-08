@@ -1,23 +1,27 @@
 # insdc-rdf
 
-Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Streams full NCBI data dumps through single-pass chunked pipelines, producing **Turtle**, **JSON-LD**, and **N-Triples** output for four data sources:
+Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Streams full NCBI data dumps through single-pass chunked pipelines, producing **Turtle**, **JSON-LD**, and **N-Triples** output for four INSDC data sources, plus ontology annotations from bsllmner-mk2:
 
 - **BioSample** — sample metadata from `biosample_set.xml.gz`
 - **SRA** — accession cross-links from `SRA_Accessions.tab`
 - **BioProject** — project metadata from `bioproject.xml`
 - **SRA Experiment** — experiment-level metadata (platform, library info) from `NCBI_SRA_Metadata_Full_*.tar[.gz]`
+- **bsllmner-mk2 annotations** — ontology terms extracted from BioSample records by an LLM, from a [BioSample Plus](https://biosampleplus.s3.ap-northeast-1.amazonaws.com/index.html) RO-Crate release
 
 ### Summary
 
-insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 222 million records across four sources in under two hours.
+insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 250 million records across five sources in about two hours.
 
 | | Records | Triples | Conversion time |
 |---|---|---|---|
-| BioSample | 53.3M | ~2.9B | 55 min |
-| SRA | 129.1M | ~1.1B | 29 min |
-| BioProject | 823K | ~4.3M | 20 sec |
-| SRA Experiment | 38.9M | ~0.4B | 24 min |
-| **Total** | **222.1M** | **~4.8B** | **~108 min** |
+| BioSample | 60.1M | ~4.0B | 71 min |
+| SRA | 143.2M | ~1.0B | 29 min |
+| BioProject | 1.12M | ~5.8M | 23 sec |
+| SRA Experiment | 41.6M | ~0.66B | 18 min |
+| bsllmner-mk2 | 4.19M | ~47M | 2 min |
+| **Total** | **250.2M** | **~5.8B** | **~121 min** |
+
+NCBI dumps of 2026-10-07 (SRA Experiment: 2026-09-13); bsllmner release 2026-06_mistral-small3.1-24b-v2.
 
 The output has been validated by loading all 4.4 billion triples into [QLever](https://github.com/ad-freiburg/qlever) and [Oxigraph](https://github.com/oxigraph/oxigraph), with SPARQL queries confirming all record counts match and spot checks returning correct data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
 
@@ -41,16 +45,23 @@ insdc-rdf convert --source bioproject --input bioproject.xml --output-dir output
 
 # SRA Experiment metadata (tar or tar.gz of per-submission XML files; format auto-detected)
 insdc-rdf convert --source sra-experiment --input NCBI_SRA_Metadata_Full_20260316.tar.gz --output-dir output/sra-experiment
+
+# bsllmner-mk2 annotations (unpacked RO-Crate release directory)
+curl -O https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2.tar.gz
+tar xzf 2026-06_mistral-small3.1-24b-v2.tar.gz
+insdc-rdf convert --source bsllmner --input 2026-06_mistral-small3.1-24b-v2 --output-dir output/bsllmner
 ```
 
 Options:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-s, --source` | `biosample` | Data source: `biosample`, `sra`, `bioproject`, `sra-experiment` |
-| `-i, --input` | (required) | Path to input file |
+| `-s, --source` | `biosample` | Data source: `biosample`, `sra`, `bioproject`, `sra-experiment`, `bsllmner` |
+| `-i, --input` | (required) | Path to input file (for `bsllmner`: the unpacked RO-Crate directory) |
 | `-o, --output-dir` | `./output` | Output directory |
 | `-c, --chunk-size` | `100000` | Records per output chunk |
+
+The bsllmner converter refuses an output directory that already holds chunks.
 
 ### Validate
 
@@ -172,6 +183,80 @@ insdc_sra:SRX000001
   ] .
 ```
 
+### bsllmner-mk2 annotations
+
+<a href="config/bsllmner/schema.svg"><img src="config/bsllmner/schema.svg" alt="bsllmner-mk2 annotation schema" width="750"></a>
+
+Each ontology term that bsllmner-mk2 assigned to a BioSample field becomes a `schema:PropertyValue` node attached with `schema:additionalProperty`. The prefix `rel:` below stands for the release IRI.
+
+```turtle
+@prefix rel: <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/> .
+
+idorg_biosample:SAMD00270091
+  schema:additionalProperty <http://ddbj.nig.ac.jp/biosample/SAMD00270091#bsllmner/2026-06_mistral-small3.1-24b-v2/rnaseq_human_5y/cell_line/CVCL_0027> .
+
+<http://ddbj.nig.ac.jp/biosample/SAMD00270091#bsllmner/2026-06_mistral-small3.1-24b-v2/rnaseq_human_5y/cell_line/CVCL_0027>
+  a schema:PropertyValue ;
+  schema:propertyID "cell_line" ;
+  schema:value "HepG2" ;
+  schema:valueReference <http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027> ;
+  biosample_ont:exactMatch true ;
+  prov:wasGeneratedBy <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/#run-rnaseq_human_5y_2021-08> .
+
+<http://purl.obolibrary.org/obo/Cellosaurus#CVCL_0027>
+  a schema:DefinedTerm ;
+  rdfs:label "Hep-G2" .
+```
+
+Provenance (one `schema:Dataset` for the release, one `prov:Activity` per bsllmner run):
+
+```turtle
+<https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/#run-rnaseq_human_5y_2021-08>
+  a prov:Activity ;
+  rdfs:label "rnaseq_human_5y_2021-08" ;
+  prov:startedAtTime "2026-05-30T17:20:09+00:00"^^xsd:dateTime ;
+  prov:endedAtTime "2026-05-30T22:16:22+00:00"^^xsd:dateTime ;
+  prov:wasAssociatedWith <https://github.com/dbcls/bsllmner-mk2/commit/9a3828811f1ab4bac85615e0e1b2efcc6603265f> ;
+  biosample_ont:llmModel "mistral-small3.1:24b" ;
+  schema:isPartOf rel: .
+
+rel:
+  a schema:Dataset ;
+  schema:name "Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample records" ;
+  schema:version "2026-06_mistral-small3.1-24b-v2" ;
+  schema:datePublished "2026-09-26"^^xsd:date ;
+  schema:license <https://creativecommons.org/licenses/by/4.0/> ;
+  schema:citation <https://doi.org/10.1101/2025.02.17.638570> .
+```
+
+- **IRI pattern**: annotation nodes are `http://ddbj.nig.ac.jp/biosample/{accession}#bsllmner/{release_id}/{dataset}/{field}/{term_local}`, where `term_local` is the term id with `:` replaced by `_` (`CVCL:0027` becomes `CVCL_0027`).
+- **Merging**: items of one entry and field that share a term become one node, with one `schema:value` per distinct extracted value. `biosample_ont:exactMatch` is `true` if the selected term matched the extracted value exactly on a label or synonym, and `false` if it was chosen by text2term similarity; for a merged node it is `true` if any merged item was exact.
+- **Datasets kept apart**: the dataset name is part of the node IRI. 1,331 accessions are annotated in two datasets (e.g. ChIP-Atlas and RNA-Seq) and get two node sets, so count samples with `COUNT(DISTINCT ?bs)`.
+- **Distinguishing from original attributes**: bsllmner nodes have `schema:propertyID` and no `schema:name`; original attribute nodes have `schema:name` and no `schema:propertyID`. Require `schema:name` to select the submitter's attributes only (adding bsllmner does not change those queries), and use `?pv schema:propertyID ?field` to select bsllmner nodes only.
+- **ShEx**: the shapes in `config/biosample` and `config/bsllmner` each describe one source, so a BioSample record that carries bsllmner annotations validates against neither alone.
+
+### Ontologies for bsllmner annotations
+
+The `ontology/*.owl` files shipped in the RO-Crate (10 files) are not part of the converter output. Loading them with the annotations is recommended:
+
+```bash
+python3 scripts/bsllmner_ontology_to_nt.py <crate>/ontology output/bsllmner-ontology
+```
+
+then index `output/bsllmner-ontology/nt` alongside the bsllmner output. The files provide labels, synonyms and definitions, not hierarchy (they contain no `rdfs:subClassOf`). A term node can therefore carry the bsllmner `rdfs:label` plus labels from the ontology files.
+
+Licenses: CC BY 4.0, except Uberon (CC BY 3.0), NCBI Gene (public domain), and the EFO classes in the CL subsets (Apache-2.0).
+
+### License and citation (bsllmner data)
+
+The bsllmner-mk2 release is licensed CC-BY-4.0. Please cite <https://doi.org/10.1101/2025.02.17.638570> and the release id (`2026-06_mistral-small3.1-24b-v2`).
+
+### Known limitations (bsllmner)
+
+- Cellosaurus (`http://purl.obolibrary.org/obo/Cellosaurus#CVCL_…`) and NCBI Gene (`http://purl.obolibrary.org/obo/NCBIGene_…`) term IRIs are bsllmner's own and do not resolve (both return 404). They match the crate's ontology files but no other dataset.
+- No hierarchy queries over the annotations, since the shipped ontologies have none.
+- Annotations reflect the BioSample snapshot that bsllmner read (May–June 2026), not the 2026-10 dump.
+
 ## rdf-config & ShEx
 
 Schema definitions using [rdf-config](https://github.com/dbcls/rdf-config) are in `config/`:
@@ -182,6 +267,7 @@ config/
   sra/             model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
   bioproject/      model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
   sra-experiment/  model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
+  bsllmner/        model.yaml, prefix.yaml, sparql.yaml, shape.shex, ...
 ```
 
 Generate ShEx validation schemas:
@@ -240,6 +326,8 @@ qlever start --name insdc-rdf \
   --port 7001 --memory-for-queries 20G --system docker
 ```
 
+`scripts/qlever_rebuild_index.sh <index-dir> <port> <nt-dir>...` wraps index build and server start; `scripts/validate_bsllmner_qlever.sh <endpoint>` checks the annotation counts.
+
 ### Triplestore comparison
 
 Loaded all N-Triples output (~550 GB, 4.4 billion triples) into QLever and [Oxigraph](https://github.com/oxigraph/oxigraph):
@@ -260,6 +348,7 @@ QLever excels at aggregation queries over billions of triples. Oxigraph is simpl
 SELECT ?type (COUNT(?s) AS ?count) WHERE { ?s a ?type . } GROUP BY ?type ORDER BY DESC(?count)
 ```
 
+<!-- record counts: updated after the 2026-10 index validation -->
 | Type | Count |
 |------|-------|
 | schema:PropertyValue | 775,089,741 |
@@ -346,6 +435,8 @@ insdc-rdf/
     biosample/      BioSample XML parser + serializers
     sra/            SRA TSV parser + serializers
     bioproject/     BioProject XML parser + serializers
+    sra-experiment/ SRA experiment XML parser + serializers
+    bsllmner/       bsllmner-mk2 RO-Crate parser + serializers
   src/main.rs       Unified CLI
   config/           rdf-config YAML schemas + ShEx
   scripts/          Daily update and Slurm job scripts
@@ -360,7 +451,7 @@ insdc-rdf/
 - [ ] Tag v0.1.0 release
 
 ### Integration
-- [ ] **bsllmner-mk2** — LLM-based ontology annotation layer on top of BioSample attributes (enriches `OriginalSampleProperty` with `valueReference` and `AnnotatedSampleType` as defined in the [rdf-config biosample model](config/biosample/model.yaml))
+- [x] **bsllmner-mk2** — ontology annotations as `schema:PropertyValue` nodes (`--source bsllmner`, `config/bsllmner/`)
 - [ ] PR the `%20` encoding fix and new SRA/BioProject configs to [dbcls/rdf-config](https://github.com/dbcls/rdf-config)
 
 ### Related projects
