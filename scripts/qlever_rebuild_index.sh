@@ -29,6 +29,12 @@ list_inputs() {
   if [ ${#found[@]} -eq 0 ]; then
     echo "no .nt or .nt.gz files in $d" >&2; return 1
   fi
+  # Both forms of one chunk (say, after gunzip -k) would be read twice.
+  for f in "$d"/*.nt; do
+    if [ -f "$f" ] && [ -f "$f.gz" ]; then
+      echo "both ${f##*/} and ${f##*/}.gz in $d; remove one" >&2; return 1
+    fi
+  done
   printf '%s\n' "${found[@]}" | LC_ALL=C sort
 }
 

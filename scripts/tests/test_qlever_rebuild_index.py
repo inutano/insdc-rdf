@@ -120,6 +120,28 @@ def test_list_inputs_refuses_directory_without_nt(inputs, tmp_path):
     assert "no .nt or .nt.gz files in %s" % empty in r.stderr
 
 
+def test_list_inputs_refuses_both_forms_of_a_chunk(inputs, tmp_path):
+    d1, _ = inputs
+    both = tmp_path / "both"
+    _write(both / "chunk_0000.nt", "<http://e/a> <http://e/p> 1 .\n")
+    _write_gz(both / "chunk_0000.nt.gz", "<http://e/a> <http://e/p> 1 .\n")
+    _write(both / "chunk_0001.nt", "<http://e/b> <http://e/p> 2 .\n")
+    r = _run(["--list-inputs", d1, both])
+    assert r.returncode != 0
+    assert "both chunk_0000.nt and chunk_0000.nt.gz in %s" % both in r.stderr
+    assert "chunk_0001.nt" not in r.stdout
+
+
+def test_build_refuses_both_forms_of_a_chunk(stubs, tmp_path):
+    both = tmp_path / "both"
+    _write(both / "chunk_0000.nt", "<http://e/a> <http://e/p> 1 .\n")
+    _write_gz(both / "chunk_0000.nt.gz", "<http://e/a> <http://e/p> 1 .\n")
+    r = _run([tmp_path / "index", 7099, both], env=stubs)
+    assert r.returncode != 0
+    assert "both chunk_0000.nt and chunk_0000.nt.gz" in r.stderr
+    assert not Path(stubs["STUB_LOG"]).exists()
+
+
 def test_usage_without_arguments():
     r = _run([])
     assert r.returncode == 1
@@ -143,7 +165,7 @@ def test_build_streams_every_input(inputs, stubs, tmp_path):
 
 def test_build_fails_when_an_input_cannot_be_read(inputs, stubs, tmp_path):
     d1, d2 = inputs
-    (d2 / "m.nt.gz").write_bytes(b"\x1f\x8b\x08\x00not really gzip")
+    (d2 / "y.nt.gz").write_bytes(b"\x1f\x8b\x08\x00not really gzip")
     idx = tmp_path / "index"
     r = _run([idx, 7099, d1, d2], env=stubs)
     assert r.returncode != 0
