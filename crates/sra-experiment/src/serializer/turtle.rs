@@ -58,13 +58,10 @@ impl Serializer for TurtleSerializer {
         if record.platform.is_some() || record.instrument_model.is_some() {
             let mut pbn_parts: Vec<String> = Vec::new();
             if let Some(ref plat) = record.platform {
-                pbn_parts.push(format!("a dra_ont:{}", to_uri_local(plat)));
+                pbn_parts.push(format!("a {}", dra_ont_term(plat)));
             }
             if let Some(ref im) = record.instrument_model {
-                pbn_parts.push(format!(
-                    "dra_ont:instrumentModel dra_ont:{}",
-                    to_uri_local(im)
-                ));
+                pbn_parts.push(format!("dra_ont:instrumentModel {}", dra_ont_term(im)));
             }
             let bnode_body = format_blank_node(&pbn_parts);
             po_lines.push(format!("dra_ont:platform {}", bnode_body));
@@ -90,21 +87,15 @@ impl Serializer for TurtleSerializer {
             }
             if let Some(ref strategy) = record.library_strategy {
                 dbn_parts.push(format!(
-                    "dra_ont:libraryStrategy dra_ont:{}",
-                    to_uri_local(strategy)
+                    "dra_ont:libraryStrategy {}",
+                    dra_ont_term(strategy)
                 ));
             }
             if let Some(ref source) = record.library_source {
-                dbn_parts.push(format!(
-                    "dra_ont:librarySource dra_ont:{}",
-                    to_uri_local(source)
-                ));
+                dbn_parts.push(format!("dra_ont:librarySource {}", dra_ont_term(source)));
             }
             if let Some(ref sel) = record.library_selection {
-                dbn_parts.push(format!(
-                    "dra_ont:librarySelection dra_ont:{}",
-                    to_uri_local(sel)
-                ));
+                dbn_parts.push(format!("dra_ont:librarySelection {}", dra_ont_term(sel)));
             }
             if let Some(ref proto) = record.library_construction_protocol {
                 dbn_parts.push(format!(
@@ -140,6 +131,37 @@ impl Serializer for TurtleSerializer {
 
     fn write_footer<W: Write>(&self, _writer: &mut W) -> std::io::Result<()> {
         Ok(())
+    }
+}
+
+/// Write a term in the DRA ontology namespace from a metadata value.
+///
+/// The value's local name (see `to_uri_local`) becomes a `dra_ont:` prefixed
+/// name when it is a safe Turtle `PN_LOCAL`, and a full IRI otherwise. Values
+/// such as `454 GS FLX+` contain characters a prefixed name cannot carry.
+fn dra_ont_term(value: &str) -> String {
+    let local = to_uri_local(value);
+    if is_safe_pn_local(&local) {
+        format!("dra_ont:{}", local)
+    } else {
+        format!("<{}{}>", DDBJ_DRA_ONT, local)
+    }
+}
+
+/// A conservative test for a Turtle `PN_LOCAL` that needs no escaping:
+/// non-empty ASCII `[A-Za-z0-9_-]`, plus `.` anywhere but first or last,
+/// starting with `[A-Za-z0-9_]`.
+fn is_safe_pn_local(local: &str) -> bool {
+    let bytes = local.as_bytes();
+    match (bytes.first(), bytes.last()) {
+        (Some(&first), Some(&last)) => {
+            (first.is_ascii_alphanumeric() || first == b'_')
+                && last != b'.'
+                && bytes
+                    .iter()
+                    .all(|&b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-' | b'.'))
+        }
+        _ => false,
     }
 }
 
@@ -365,6 +387,171 @@ mod tests {
             !s.contains("dra_ont:nominalLength"),
             "SINGLE should not have nominalLength"
         );
+    }
+
+    fn record_with_terms(platform: &str, model: &str, term: &str) -> SraExperimentRecord {
+        SraExperimentRecord {
+            accession: "SRX1056924".to_string(),
+            title: None,
+            design_description: None,
+            library_name: None,
+            library_strategy: Some(term.to_string()),
+            library_source: Some(term.to_string()),
+            library_selection: Some(term.to_string()),
+            library_layout: Some(LibraryLayout::Single),
+            library_construction_protocol: None,
+            platform: Some(platform.to_string()),
+            instrument_model: Some(model.to_string()),
+        }
+    }
+
+    #[test]
+    fn test_is_safe_pn_local() {
+        for ok in [
+            "Illumina_NovaSeq_6000",
+            "RNA-Seq",
+            "454_GS_FLX",
+            "_x",
+            "0abc",
+            "a.b",
+            "a.b.c",
+            "PAIRED",
+        ] {
+            assert!(is_safe_pn_local(ok), "{:?} should be safe", ok);
+        }
+        for bad in [
+            "",
+            "454_GS_FLX+",
+            "DNBSEQ-T1+",
+            "Hi-C/3C",
+            "x(y)",
+            "-abc",
+            ".abc",
+            "abc.",
+            "a:b",
+            "a%20b",
+            "a#b",
+            "caf\u{e9}",
+            "a b",
+        ] {
+            assert!(!is_safe_pn_local(bad), "{:?} should not be safe", bad);
+        }
+    }
+
+    #[test]
+    fn test_unsafe_instrument_model_written_as_full_iri() {
+        let ser = TurtleSerializer::new();
+        let s = ser.record_to_string(&record_with_terms("LS454", "454 GS FLX+", "WGS"));
+        assert!(
+            s.contains(
+                "dra_ont:instrumentModel <http://ddbj.nig.ac.jp/ontologies/dra/454_GS_FLX+>"
+            ),
+            "instrument model with '+' must be a full IRI:\n{}",
+            s
+        );
+        assert!(
+            !s.contains("dra_ont:454_GS_FLX+"),
+            "invalid prefixed name:\n{}",
+            s
+        );
+        // Safe locals in the same record keep their prefixed names.
+        assert!(s.contains("a dra_ont:LS454"), "{}", s);
+        assert!(s.contains("dra_ont:libraryStrategy dra_ont:WGS"), "{}", s);
+    }
+
+    #[test]
+    fn test_unsafe_locals_in_every_position_written_as_full_iris() {
+        let ser = TurtleSerializer::new();
+        let s = ser.record_to_string(&record_with_terms("ION+TORRENT", "DNBSEQ-T1+", "Hi-C/3C"));
+        let dra = "http://ddbj.nig.ac.jp/ontologies/dra/";
+        assert!(s.contains(&format!("a <{}ION+TORRENT>", dra)), "{}", s);
+        assert!(
+            s.contains(&format!("dra_ont:instrumentModel <{}DNBSEQ-T1+>", dra)),
+            "{}",
+            s
+        );
+        for p in ["libraryStrategy", "librarySource", "librarySelection"] {
+            assert!(
+                s.contains(&format!("dra_ont:{} <{}Hi-C/3C>", p, dra)),
+                "{} not a full IRI:\n{}",
+                p,
+                s
+            );
+        }
+        assert!(!s.contains("dra_ont:ION+"), "{}", s);
+        assert!(!s.contains("dra_ont:DNBSEQ-T1+"), "{}", s);
+        assert!(!s.contains("dra_ont:Hi-C/3C"), "{}", s);
+    }
+
+    #[test]
+    fn test_safe_instrument_model_keeps_prefixed_name() {
+        let ser = TurtleSerializer::new();
+        let s = ser.record_to_string(&record_with_terms(
+            "ILLUMINA",
+            "Illumina NovaSeq 6000",
+            "RNA-Seq",
+        ));
+        assert!(
+            s.contains("dra_ont:instrumentModel dra_ont:Illumina_NovaSeq_6000"),
+            "{}",
+            s
+        );
+        assert!(s.contains("a dra_ont:ILLUMINA"), "{}", s);
+        assert!(s.contains("dra_ont:librarySource dra_ont:RNA-Seq"), "{}", s);
+        assert!(
+            !s.contains("<http://ddbj.nig.ac.jp/ontologies/dra/"),
+            "{}",
+            s
+        );
+    }
+
+    #[test]
+    fn test_ntriples_for_unsafe_local_unchanged() {
+        use crate::serializer::ntriples::NTriplesSerializer;
+        let nt = NTriplesSerializer::new().record_to_string(&record_with_terms(
+            "LS454",
+            "454 GS FLX+",
+            "WGS",
+        ));
+        // Blank node labels come from a global counter: number them in order of appearance.
+        let mut labels: Vec<String> = Vec::new();
+        let normalised: Vec<String> = nt
+            .lines()
+            .map(|line| {
+                line.split(' ')
+                    .map(|w| {
+                        if !w.starts_with("_:b") {
+                            return w.to_string();
+                        }
+                        let i = labels.iter().position(|l| l == w).unwrap_or_else(|| {
+                            labels.push(w.to_string());
+                            labels.len() - 1
+                        });
+                        format!("_:n{}", i)
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            })
+            .collect();
+        let s = "<http://identifiers.org/insdc.sra/SRX1056924>";
+        let d = "http://ddbj.nig.ac.jp/ontologies/dra/";
+        let t = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+        let expected = vec![
+            format!("{s} <{t}> <{d}Experiment> ."),
+            format!("{s} <http://purl.org/dc/terms/identifier> \"SRX1056924\" ."),
+            format!("{s} <{d}platform> _:n0 ."),
+            format!("_:n0 <{t}> <{d}LS454> ."),
+            format!("_:n0 <{d}instrumentModel> <{d}454_GS_FLX+> ."),
+            format!("{s} <{d}design> _:n1 ."),
+            format!("_:n1 <{t}> <{d}ExperimentDesign> ."),
+            format!("_:n1 <{d}libraryStrategy> <{d}WGS> ."),
+            format!("_:n1 <{d}librarySource> <{d}WGS> ."),
+            format!("_:n1 <{d}librarySelection> <{d}WGS> ."),
+            format!("_:n1 <{d}libraryLayout> _:n2 ."),
+            format!("_:n2 <{t}> <{d}SINGLE> ."),
+        ];
+        assert_eq!(normalised, expected);
+        assert!(nt.ends_with(" .\n"));
     }
 
     #[test]
