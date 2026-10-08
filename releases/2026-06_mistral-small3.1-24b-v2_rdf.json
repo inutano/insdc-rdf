@@ -42,12 +42,12 @@
       "Annotation nodes carry `schema:propertyID` (the field, for example `cell_line`) and no `schema:name`, so queries on the submitters' attributes (`schema:name`) are unaffected by the annotations.",
       "Term IRIs are written exactly as bsllmner-mk2 produced them, without normalization. The terms carry only `rdf:type schema:DefinedTerm` and `rdfs:label`.",
       "The ontology files the terms come from are not part of this release: they are in the source crate under `ontology/`. They are flat term lists (label, synonyms, definition) with no `rdfs:subClassOf`, so loading them alongside adds synonyms and definitions but no term hierarchy.",
-      "Cellosaurus (`http://purl.obolibrary.org/obo/Cellosaurus#CVCL_…`) and NCBI Gene (`http://purl.obolibrary.org/obo/NCBIGene_…`) term IRIs are bsllmner-mk2's own and do not resolve (HTTP 404). They match the crate's ontology files but no other dataset.",
+      "Cellosaurus (`http://purl.obolibrary.org/obo/Cellosaurus#CVCL_…`) and NCBI Gene (`http://purl.obolibrary.org/obo/NCBIGene_…`) term IRIs are bsllmner-mk2's own and do not resolve (HTTP 404). They match the crate's ontology files, not the IRIs that Cellosaurus or NCBI publish.",
       "The annotations reflect the BioSample records bsllmner-mk2 read in May–June 2026, not the 2026-10 NCBI dump, so a few annotated BioSamples may be absent from `2026-10_insdc-rdf`.",
       "Cite the bsllmner-mk2 publication, <https://doi.org/10.1101/2025.02.17.638570>, and this release ID."
     ],
     "terms": [
-      "Term labels (`rdfs:label`) are taken from third-party ontologies with their own terms: CC BY 4.0 for most, CC BY 3.0 for Uberon, and Apache-2.0 for the EFO classes in the Cell Ontology subsets. Attribute them when redistributing; see <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/SOURCES.md>. The BioSample records the annotations describe come from NCBI, whose terms are listed there too."
+      "Term labels (`rdfs:label`) are taken from third-party ontologies with their own terms: CC BY 4.0 for most, CC BY 3.0 for Uberon, Apache-2.0 for the EFO classes in the Cell Ontology subsets, and public domain for NCBI Gene. Attribute them when redistributing; see <https://biosampleplus.s3.ap-northeast-1.amazonaws.com/SOURCES.md>. The BioSample records the annotations describe come from NCBI, whose terms are listed there too."
     ]
   }
 }
