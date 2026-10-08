@@ -3448,3 +3448,21 @@ Tests:
 - [ ] **Step 7:** Tell the user:
   - Where the edited catalog sources are: `$OUT/release-staging/bucket/`, plus the scratch repo's diff.
   - That `release-staging` can be deleted after the upload, and its size.
+
+### Task 14 additions after the final review (2026-10-08)
+
+These steps add to Task 14 and come before its Step 1 packaging of the INSDC release.
+
+- **sra-experiment re-conversion (C1).**
+  - Once the QLever build has left its parse phase, re-convert sra-experiment with the frozen `a5600bc` release binary into `/data3/insdc-rdf-202610/sra-experiment.v2`.
+  - `cmp` every nt and jsonld chunk against `/data3/insdc-rdf-202610/sra-experiment`. They must be byte-identical.
+  - Then move the old directory to `sra-experiment.superseded-turtle-plus` and `sra-experiment.v2` to `sra-experiment`. Nothing is deleted.
+- **Strict-parse gate.** Use Apache Jena `riot --count` (4.10.0, scratchpad) on:
+  - every sra-experiment and bsllmner ttl.gz and jsonld.gz chunk;
+  - about every 20th chunk of the other sources.
+
+  Each count must equal the matching nt chunk's line count.
+- **Recipe smoke run.** Run `scripts/qlever_rebuild_index.sh` at the pinned commit `374d5fb`, in the QLever image, on the packaged `bsllmner/nt/*.nt.gz`, with `TRIPLES_EXPECTED=47307387`, a scratch index dir and a free port. This happens after the main build has finished. Remove the smoke container afterwards.
+- **Annotation release note.** Before re-packaging the annotation release, confirm the "a few annotated BioSamples may be absent" note against the :7011 missing-accession count.
+- **Re-package both releases on the upload day** (`date_published`). Both the staged annotation release and the INSDC release predate the fixes.
+- **Merge before upload.** Merge to master with a merge commit or a fast-forward, never a squash or rebase, and push. The release metadata cites c3ba3b0, 6ea33dc, a5600bc and 374d5fb.
