@@ -3,7 +3,7 @@
   "bucket": "biosampleplus",
   "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
   "name": "INSDC BioProject, BioSample and SRA metadata as RDF",
-  "description": "RDF conversion of the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 (SRA experiment metadata of 2026-09-13), produced with insdc-rdf: 60,144,760 BioSample, 1,124,118 BioProject, 143,187,558 SRA accession and 41,593,302 SRA experiment records as 5,709,467,473 triples, in N-Triples, Turtle and JSON-LD. The bsllmner-mk2 annotation RDF attaches to the BioSample IRIs of this release.",
+  "description": "RDF conversion of the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 (SRA experiment metadata of 2026-09-13), produced with insdc-rdf: 60,144,760 BioSample, 1,124,118 BioProject, 143,187,558 SRA accession and 41,593,302 SRA experiment records as 5,709,467,473 N-Triples lines (5,621,216,568 distinct triples), in N-Triples, Turtle and JSON-LD. The bsllmner-mk2 annotation RDF attaches to the BioSample IRIs of this release.",
   "date_published": "2026-10-08",
   "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
   "authors": [
@@ -58,7 +58,8 @@
     "notes": [
       "`dra_ont:Experiment` subjects come from both `sra` (accession list) and `sra-experiment` (experiment XML); load both for the full set.",
       "Every triple is in the default graph. The chunks of one source can be loaded in any order.",
-      "BioProject `dct:created` values are calendar dates but are typed `xsd:dateTime` in this release, and the schema in `schema/bioproject/` declares the intended `xsd:date`. Compare them as strings, or cast with `xsd:date(str(?created))`. The converter types them as `xsd:date` from the next release on.",
+      "BioProject `dct:created` values are calendar dates but are typed `xsd:dateTime` in this release, and the schema in `schema/bioproject/` declares the intended `xsd:date`. Compare them as strings, or cast with `xsd:date(str(?created))`. The converter types them as `xsd:date` from the next release on. Jena riot warns about every one of these values (1,112,045 warnings) when it reads the N-Triples or Turtle files and exits with status 1, but it still reads every triple.",
+      "The triple counts in this README and in the bucket catalog count N-Triples lines. 88,250,905 lines repeat a triple. 83,186,604 of them come from `sra` and `sra-experiment`, which both write the `rdf:type` and `dct:identifier` of each of the 41,593,302 experiments. The remaining 5,064,301 are statements that the source data repeat, such as an attribute a BioSample lists twice, whose `rdf:type`, `schema:name` and `schema:additionalProperty` triples then recur. A triplestore keeps one copy, so the release loads as 5,621,216,568 distinct triples. A JSON-LD parser returns a set of triples, so for chunks with repeats it counts fewer triples than the chunk has lines.",
       "The `sra-experiment` source was re-converted with a later insdc-rdf commit, which writes instrument models such as `454 GS FLX+` as full IRIs in Turtle. Its N-Triples and JSON-LD are byte-identical to the first conversion (see Provenance)."
     ],
     "terms": [

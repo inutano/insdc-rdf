@@ -47,7 +47,8 @@ query "BioProject spot check (PRJNA3)" \
 query "PropertyValue count" \
   'SELECT (COUNT(*) AS ?count) WHERE { ?pv a <http://schema.org/PropertyValue> . }'
 
+# The IRI range filter stands for STRSTARTS(STR(?bs), "http://identifiers.org/biosample/"), which exceeds QLever's 300 s timeout at this scale ("0" is the character after "/").
 query "Cross-link: SRA records linking to BioSample" \
-  'SELECT (COUNT(DISTINCT ?sra) AS ?count) WHERE { ?sra <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?bs . FILTER(STRSTARTS(STR(?bs), "http://identifiers.org/biosample/")) }'
+  'SELECT (COUNT(DISTINCT ?sra) AS ?count) WHERE { ?sra <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?bs . FILTER(?bs >= <http://identifiers.org/biosample/> && ?bs < <http://identifiers.org/biosample0>) }'
 
 echo "=== Done ==="

@@ -23,7 +23,9 @@ insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecos
 
 NCBI dumps of 2026-10-07 (SRA Experiment: 2026-09-13); bsllmner release 2026-06_mistral-small3.1-24b-v2.
 
-The output has been validated by loading all 4.4 billion triples into [QLever](https://github.com/ad-freiburg/qlever) and [Oxigraph](https://github.com/oxigraph/oxigraph), with SPARQL queries confirming all record counts match and spot checks returning correct data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
+The Triples column counts N-Triples lines. 88,250,905 lines of the 2026-10 INSDC output repeat a triple. 83,186,604 of them come from `sra` and `sra-experiment`, which both write the `rdf:type` and `dct:identifier` of each of the 41,593,302 experiments. The remaining 5,064,301 are statements that the source data repeat, such as an attribute a BioSample lists twice, whose `rdf:type`, `schema:name` and `schema:additionalProperty` triples then recur. A triplestore keeps one copy, so the INSDC output holds 5,621,216,568 distinct triples.
+
+The 2026-10 output was validated by loading it, together with the bsllmner annotations and the ontology files they use, into [QLever](https://github.com/ad-freiburg/qlever). The load gave 5,760,937,728 N-Triples lines and 5,672,544,678 distinct triples. Record counts match the conversion manifests and the source files, and spot checks return the expected data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
 
 ## Install
 
@@ -333,7 +335,7 @@ qlever start --name insdc-rdf \
 
 ### Triplestore comparison
 
-Loaded all N-Triples output (~550 GB, 4.4 billion triples) into QLever and [Oxigraph](https://github.com/oxigraph/oxigraph):
+In an earlier refresh, all N-Triples output (~550 GB, 4.4 billion triples) was loaded into QLever and [Oxigraph](https://github.com/oxigraph/oxigraph):
 
 | Metric | QLever | Oxigraph |
 |--------|--------|----------|
@@ -351,20 +353,32 @@ QLever excels at aggregation queries over billions of triples. Oxigraph is simpl
 SELECT ?type (COUNT(?s) AS ?count) WHERE { ?s a ?type . } GROUP BY ?type ORDER BY DESC(?count)
 ```
 
-<!-- record counts: updated after the 2026-10 index validation -->
 | Type | Count |
 |------|-------|
-| schema:PropertyValue | 775,089,741 |
-| biosample_ont:BioSampleRecord | 53,342,722 |
-| dra_ont:Run | 41,361,437 |
-| dra_ont:Sample | 40,399,579 |
-| dra_ont:Experiment | 38,978,968 |
-| dra_ont:Submission | 7,509,943 |
-| bioproject_ont:BioProjectRecord | 823,572 |
-| dra_ont:Study | 705,171 |
-| dra_ont:Analysis | 145,442 |
+| schema:PropertyValue | 877,826,400 |
+| biosample_ont:BioSampleRecord | 60,144,760 |
+| dra_ont:Run | 44,476,899 |
+| dra_ont:Sample | 43,691,678 |
+| dra_ont:Experiment | 41,766,506 |
+| dra_ont:ExperimentDesign | 41,593,302 |
+| dra_ont:Submission | 7,917,976 |
+| dra_ont:Analysis | 4,575,585 |
+| bioproject_ont:BioProjectRecord | 1,124,118 |
+| dra_ont:Study | 758,902 |
+| schema:DefinedTerm | 38,737 |
+| prov:Activity | 311 |
+| schema:Dataset | 1 |
 
-All counts match the conversion manifests exactly. Query response time: 16 ms.
+The platform classes (`dra_ont:ILLUMINA` and so on) and the OWL classes of the ontology files are left out.
+
+- BioSample, BioProject and ExperimentDesign counts match the conversion manifests.
+- The SRA types match the live, de-duplicated rows of `SRA_Accessions.tab`. The converter drops `suppressed`, `unpublished` and `withdrawn` rows, and 12 SAMPLE accessions are listed twice.
+- `dra_ont:Experiment` is the union of `sra` and `sra-experiment`.
+- `schema:PropertyValue` includes the 6,746,471 bsllmner annotation nodes.
+- The bsllmner counts (311 runs, 6,746,471 annotations, 38,737 terms) match the release.
+- Query time is 59 ms.
+
+129,837,834 SRA records link to a BioSample, each with exactly one link.
 
 ### Spot checks
 
@@ -382,9 +396,11 @@ SELECT ?p ?o WHERE {
 | dct:description | "Alistipes putredinis DSM 17216" |
 | dct:identifier | "SAMN00000002" |
 | dct:issued | 2008-04-04T00:00:00 |
-| dct:modified | 2022-09-25T02:00:02.729 |
+| dct:modified | 2026-08-30T02:00:02.453 |
+| biosample_ont:taxonomyName | "Alistipes putredinis DSM 17216" |
 | rdfs:label | "Alistipes putredinis DSM 17216" |
 | rdf:type | biosample_ont:BioSampleRecord |
+| rdfs:seeAlso | <http://identifiers.org/taxonomy/445970> |
 | schema:additionalProperty | (27 PropertyValue nodes) |
 
 SRA run cross-links:
