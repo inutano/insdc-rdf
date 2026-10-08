@@ -390,7 +390,6 @@ dependencies = [
  "flate2",
  "insdc-rdf-core",
  "md-5",
- "percent-encoding",
  "quick-xml",
  "serde",
  "serde_json",
@@ -403,6 +402,7 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "percent-encoding",
  "serde",
  "serde_json",
  "tempfile",
