@@ -1,0 +1,10 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.1/context",
+  "@graph": [
+    {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"}, "about": {"@id": "./"}},
+    {"@id": "./", "@type": "Dataset", "name": "Test release of ontology-mapped named entities", "description": "Fixture for insdc-rdf tests.", "datePublished": "2026-09-26", "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"}},
+    {"@id": "#bsllmner2-5a5744e", "@type": "SoftwareApplication", "name": "bsllmner2", "softwareVersion": "5a5744ee95cac05ce02bf272a690d3975261d0a0", "url": "https://github.com/dbcls/bsllmner-mk2/commit/5a5744ee95cac05ce02bf272a690d3975261d0a0"},
+    {"@id": "#bsllmner2-9a38288", "@type": "SoftwareApplication", "name": "bsllmner2", "softwareVersion": "9a3828811f1ab4bac85615e0e1b2efcc6603265f", "url": "https://github.com/dbcls/bsllmner-mk2/commit/9a3828811f1ab4bac85615e0e1b2efcc6603265f"},
+    {"@id": "#model-mistral-small3-1-24b", "@type": "SoftwareApplication", "name": "mistral-small3.1:24b"}
+  ]
+}

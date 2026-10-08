@@ -397,6 +397,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "insdc-rdf-bsllmner"
+version = "0.3.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "insdc-rdf-biosample",
+ "insdc-rdf-core",
+ "md-5",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "insdc-rdf-core"
 version = "0.3.0"
 dependencies = [
