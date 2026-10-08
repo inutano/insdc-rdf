@@ -459,6 +459,8 @@ python3 scripts/package_rdf_release.py releases/<id>.json <out-dir> --data-root 
 bash scripts/upload_rdf_release.sh <out-dir> <id>
 ```
 
+`--dryrun` lists what would be uploaded. If an upload is interrupted, `--resume` finishes it without re-sending the objects already in the bucket.
+
 Releases are immutable. A new NCBI dump becomes a new `releases/YYYY-MM_insdc-rdf.json` and a new release, not an overwrite of an existing one.
 
 ## Roadmap
