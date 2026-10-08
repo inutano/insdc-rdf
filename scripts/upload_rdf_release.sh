@@ -4,8 +4,13 @@
 #   --dryrun  print what would be uploaded; skip the post-upload comparison
 #   --resume  finish an interrupted upload: accept objects already under the release
 #             prefix, sync each group by size, and upload the tarball only if the remote
-#             one is absent or of another size. The final checks still run.
-# Env:   BUCKET (default biosampleplus), AWS_PROFILE as usual.
+#             one is absent or of another size. The final checks still run. Refused for
+#             a release that the bucket's index.json already lists.
+#             Do not re-package between an interrupted upload and --resume.
+# After uploading, README.md, ro-crate-metadata.json and provenance/checksums.sha256 are
+# read back and compared with the local copies; checksums.sha256 pins every other file.
+# Env:   BUCKET (default biosampleplus), AWS_PROFILE as usual,
+#        BASE_URL (default https://$BUCKET.s3.ap-northeast-1.amazonaws.com; for the catalog).
 # The catalog files (index.json etc.) are not handled here.
 set -euo pipefail
 
@@ -21,11 +26,13 @@ while [[ "${1:-}" == --* ]]; do
 done
 if [[ $# -ne 2 ]]; then
   echo "usage: $0 [--dryrun] [--resume] OUT_DIR RELEASE_ID" >&2
+  echo "Do not re-package between an interrupted upload and --resume." >&2
   exit 2
 fi
 OUT_DIR=$1
 ID=$2
 BUCKET=${BUCKET:-biosampleplus}
+BASE_URL=${BASE_URL:-https://$BUCKET.s3.ap-northeast-1.amazonaws.com}
 DIR="$OUT_DIR/$ID"
 TARBALL="$OUT_DIR/$ID.tar.gz"
 REMOTE_TARBALL="s3://$BUCKET/releases/$ID.tar.gz"
@@ -69,6 +76,14 @@ if [[ -n "$tb_bytes" ]]; then
   [[ "$(stat -c %s "$TARBALL")" == "$tb_bytes" ]] || die "$TARBALL size differs from tarball_bytes in $ENTRY"
 elif [[ -e "$TARBALL" ]]; then
   die "$TARBALL exists, but $ENTRY has no tarball; remove it or re-package"
+fi
+
+# A release in the catalog is published: --resume must not touch it.
+if [[ -n "$RESUME" ]]; then
+  catalog=$(curl -sf "$BASE_URL/index.json") || die "could not fetch $BASE_URL/index.json to check that $ID is unpublished"
+  listed=$(printf '%s' "$catalog" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("yes" if any(r.get("release_id") == sys.argv[1] for r in d["releases"]) else "no")' "$ID") \
+    || die "could not read the release list in $BASE_URL/index.json"
+  [[ "$listed" == no ]] || die "$BASE_URL/index.json already lists $ID; a published release cannot be resumed"
 fi
 
 # Trailing slash matters: without it, ...v2 would match ...v2_rdf.
@@ -138,6 +153,15 @@ if [[ "$local_count" != "$remote_count" || "$local_bytes" != "$remote_bytes" ]];
   die "mismatch: local $local_count files / $local_bytes bytes, remote $remote_count files / $remote_bytes bytes"
 fi
 echo "ok: $local_count files, $local_bytes bytes uploaded to s3://$BUCKET/releases/$ID/"
+
+# Same counts and sizes can still hide other bytes (sync --size-only keeps a same-size
+# object). checksums.sha256 lists every other file's digest, so these three pin it all.
+checked=(README.md ro-crate-metadata.json provenance/checksums.sha256)
+for f in "${checked[@]}"; do
+  aws s3 cp --no-progress "s3://$BUCKET/releases/$ID/$f" - | cmp -s - "$DIR/$f" \
+    || die "s3://$BUCKET/releases/$ID/$f differs from the local copy $DIR/$f (or could not be read)"
+done
+echo "ok: README.md, ro-crate-metadata.json, provenance/checksums.sha256 match the local copies"
 if [[ -n "$tb_bytes" ]]; then
   remote_tb=$(remote_tarball_size)
   [[ "$remote_tb" == "$tb_bytes" ]] || die "$REMOTE_TARBALL has ${remote_tb:-no} bytes, tarball_bytes is $tb_bytes"

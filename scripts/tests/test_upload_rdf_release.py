@@ -102,6 +102,17 @@ if cmd == "ls":
     sys.exit(0 if keys else 1)
 elif cmd in ("cp", "sync"):
     src, dst = pos
+    if cmd == "cp" and src.startswith("s3://") and dst == "-":
+        bucket, key = split(src)
+        obj = root / bucket / key
+        if not obj.is_file():
+            sys.stderr.write("download failed: %s Not Found\n" % src)
+            sys.exit(1)
+        data = obj.read_bytes()
+        if os.environ.get("STUB_CORRUPT") and key.endswith("/" + os.environ["STUB_CORRUPT"]):
+            data = data[:-1] + b"!"
+        sys.stdout.buffer.write(data)
+        sys.exit(0)
     if cmd == "cp" and "--recursive" not in flags:
         put(src, dst)
         sys.exit(0)
@@ -158,6 +169,11 @@ def _package(out, tarball):
     (out / (RID + ".index-entry.json")).write_text(json.dumps(entry))
 
 
+def _catalog(site, ids):
+    (site / "index.json").write_text(json.dumps(
+        {"name": "test", "releases": [{"release_id": i} for i in ids]}))
+
+
 @pytest.fixture
 def env(tmp_path):
     bindir = tmp_path / "bin"
@@ -166,13 +182,18 @@ def env(tmp_path):
     stub.write_text(AWS_STUB)
     stub.chmod(0o755)
     e = dict(os.environ)
+    site = tmp_path / "site"
+    site.mkdir()
+    _catalog(site, ["2099-01_other"])
     e.update(PATH="%s:%s" % (bindir, e["PATH"]), STUB_ROOT=str(tmp_path / "s3"),
-             STUB_LOG=str(tmp_path / "aws.log"), BUCKET="testbucket")
-    for k in ("STUB_TRUNCATE", "STUB_LS_FAIL"):
+             STUB_LOG=str(tmp_path / "aws.log"), BUCKET="testbucket",
+             BASE_URL="file://%s" % site)
+    for k in ("STUB_TRUNCATE", "STUB_LS_FAIL", "STUB_CORRUPT"):
         e.pop(k, None)
     out = tmp_path / "out"
     _package(out, tarball=True)
-    return {"tmp": tmp_path, "env": e, "out": out, "remote": tmp_path / "s3" / "testbucket"}
+    return {"tmp": tmp_path, "env": e, "out": out, "remote": tmp_path / "s3" / "testbucket",
+            "site": site}
 
 
 def _run(env, *flags, **extra):
@@ -345,6 +366,73 @@ def test_listing_error_is_fatal(env):
     assert r.returncode == 1
     assert "could not list" in r.stderr
     assert not [c for c in _calls(env) if c.startswith(("s3 cp", "s3 sync"))]
+
+
+def test_resume_refused_for_a_published_release(env):
+    _interrupted(env)
+    _catalog(env["site"], ["2099-01_other", RID])
+    for flags in (("--resume",), ("--resume", "--dryrun")):
+        r = _run(env, *flags)
+        assert r.returncode == 1
+        assert "index.json already lists %s" % RID in r.stderr
+    assert not [c for c in _calls(env) if c.startswith(("s3 cp", "s3 sync"))]
+
+
+def test_resume_refused_when_catalog_unreadable(env):
+    _interrupted(env)
+    (env["site"] / "index.json").unlink()
+    r = _run(env, "--resume")
+    assert r.returncode == 1
+    assert "could not fetch" in r.stderr and "index.json" in r.stderr
+    assert not [c for c in _calls(env) if c.startswith(("s3 cp", "s3 sync"))]
+
+
+def test_catalog_not_needed_without_resume(env):
+    (env["site"] / "index.json").unlink()
+    r = _run(env)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_content_checked_after_upload(env):
+    r = _run(env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    downloads = [c for c in _calls(env) if c.startswith("s3 cp") and c.endswith(" -")]
+    srcs = [next(w for w in c.split() if w.startswith("s3://")) for c in downloads]
+    assert [w.split("/releases/%s/" % RID)[1] for w in srcs] == [
+        "README.md", "ro-crate-metadata.json", "provenance/checksums.sha256"]
+    assert "ok: README.md, ro-crate-metadata.json, provenance/checksums.sha256 match" in r.stdout
+
+
+@pytest.mark.parametrize("name", ["README.md", "ro-crate-metadata.json", "checksums.sha256"])
+def test_content_mismatch_fails(env, name):
+    r = _run(env, STUB_CORRUPT=name)
+    assert r.returncode == 1
+    assert "differs from the local copy" in r.stderr and name in r.stderr
+
+
+def test_resume_after_repackage_detected(env):
+    # The interrupted attempt uploaded a README of the same size but other bytes,
+    # for example before a date bump: sync --size-only keeps it, the check catches it.
+    _interrupted(env)
+    stale = env["remote"] / "releases" / RID / "README.md"
+    stale.write_bytes(b"# Tset\n")
+    assert len(stale.read_bytes()) == len(FILES["README.md"])
+    r = _run(env, "--resume")
+    assert r.returncode == 1
+    assert "releases/%s/README.md differs from the local copy" % RID in r.stderr
+
+
+def test_dryrun_skips_content_check(env):
+    r = _run(env, "--dryrun")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert not [c for c in _calls(env) if c.endswith(" -")]
+
+
+def test_usage_warns_against_repackaging():
+    r = subprocess.run(["bash", str(SCRIPT)], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                       universal_newlines=True)
+    assert r.returncode == 2
+    assert "Do not re-package between an interrupted upload and --resume." in r.stderr
 
 
 def test_usage(env):
