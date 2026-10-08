@@ -144,7 +144,7 @@
     <polyline points='470,310 470,290 650,290 650,310' class='st2'/>
     <g>
       <text x='478' y='325' class='st3 st4' dominant-baseline='middle'>
-        2001-01-09 00:00:00 UTC
+        &quot;2001-01-09T00:00:00Z&quot;^^xsd:dateTime
       </text>
     </g>
     <g>
@@ -154,7 +154,7 @@
     </g>
     <g>
       <text x='642' y='300' class='st8 st6 st7' text-anchor='end' dominant-baseline='middle'>
-        Time
+        dateTime
       </text>
     </g>
   </g>

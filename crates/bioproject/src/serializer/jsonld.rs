@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::io::Write;
 
-use super::Serializer;
+use super::{xsd_date_type, Serializer};
 use crate::model::BioProjectRecord;
 
 #[derive(Debug, Clone, Serialize)]
@@ -14,18 +14,21 @@ struct JsonLdContext {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct TypedDateTime {
+struct TypedDate {
     #[serde(rename = "@value")]
     value: String,
     #[serde(rename = "@type")]
     r#type: &'static str,
 }
 
-impl TypedDateTime {
-    fn new(v: impl Into<String>) -> Self {
-        TypedDateTime {
-            value: v.into(),
-            r#type: "xsd:dateTime",
+impl TypedDate {
+    fn new(v: &str) -> Self {
+        TypedDate {
+            value: v.to_string(),
+            r#type: match xsd_date_type(v) {
+                "date" => "xsd:date",
+                _ => "xsd:dateTime",
+            },
         }
     }
 }
@@ -45,9 +48,9 @@ struct JsonLdRecord {
     #[serde(rename = "rdfs:label", skip_serializing_if = "Option::is_none")]
     rdfs_label: Option<String>,
     #[serde(rename = "dct:issued", skip_serializing_if = "Option::is_none")]
-    dct_issued: Option<TypedDateTime>,
+    dct_issued: Option<TypedDate>,
     #[serde(rename = "dct:created", skip_serializing_if = "Option::is_none")]
-    dct_created: Option<TypedDateTime>,
+    dct_created: Option<TypedDate>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -77,8 +80,8 @@ impl Serializer for JsonLdSerializer {
             dct_identifier: record.accession.clone(),
             dct_description: record.title.clone(),
             rdfs_label: record.label().map(|s| s.to_string()),
-            dct_issued: record.release_date.as_deref().map(TypedDateTime::new),
-            dct_created: record.submission_date.as_deref().map(TypedDateTime::new),
+            dct_issued: record.release_date.as_deref().map(TypedDate::new),
+            dct_created: record.submission_date.as_deref().map(TypedDate::new),
         };
 
         let json = serde_json::to_string_pretty(&obj).map_err(std::io::Error::other)?;
@@ -123,5 +126,45 @@ mod tests {
         let parsed: serde_json::Value = serde_json::from_str(&s).expect("valid JSON");
         assert!(parsed.is_array());
         assert_eq!(parsed[0]["@type"], "bp_ont:BioProjectRecord");
+    }
+
+    fn dated_record(issued: &str, created: &str) -> serde_json::Value {
+        let ser = JsonLdSerializer::new();
+        let rec = BioProjectRecord {
+            accession: "PRJNA3".to_string(),
+            name: None,
+            title: None,
+            description: None,
+            organism_name: None,
+            taxonomy_id: None,
+            release_date: Some(issued.to_string()),
+            submission_date: Some(created.to_string()),
+        };
+        let mut buf = Vec::new();
+        ser.write_record(&mut buf, &rec).unwrap();
+        serde_json::from_slice(&buf).expect("valid JSON")
+    }
+
+    #[test]
+    fn test_date_datatype_follows_lexical_form() {
+        let v = dated_record("2001-01-09T00:00:00Z", "2003-02-23");
+        assert_eq!(
+            v["dct:issued"],
+            serde_json::json!({"@value": "2001-01-09T00:00:00Z", "@type": "xsd:dateTime"})
+        );
+        assert_eq!(
+            v["dct:created"],
+            serde_json::json!({"@value": "2003-02-23", "@type": "xsd:date"})
+        );
+
+        let v = dated_record("2001-01-09", "2003-02-23T10:20:30Z");
+        assert_eq!(
+            v["dct:issued"],
+            serde_json::json!({"@value": "2001-01-09", "@type": "xsd:date"})
+        );
+        assert_eq!(
+            v["dct:created"],
+            serde_json::json!({"@value": "2003-02-23T10:20:30Z", "@type": "xsd:dateTime"})
+        );
     }
 }

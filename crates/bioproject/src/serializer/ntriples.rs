@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use super::Serializer;
+use super::{xsd_date_type, Serializer};
 use crate::model::BioProjectRecord;
 use insdc_rdf_core::escape::escape_ntriples_string;
 use insdc_rdf_core::prefix::*;
@@ -52,25 +52,26 @@ impl Serializer for NTriplesSerializer {
             )?;
         }
 
-        let xsd_dt = format!("{}dateTime", XSD);
         if let Some(ref date) = record.release_date {
             writeln!(
                 writer,
-                "<{}> <{}issued> \"{}\"^^<{}> .",
+                "<{}> <{}issued> \"{}\"^^<{}{}> .",
                 subj,
                 DCT,
                 escape_ntriples_string(date),
-                xsd_dt
+                XSD,
+                xsd_date_type(date)
             )?;
         }
         if let Some(ref date) = record.submission_date {
             writeln!(
                 writer,
-                "<{}> <{}created> \"{}\"^^<{}> .",
+                "<{}> <{}created> \"{}\"^^<{}{}> .",
                 subj,
                 DCT,
                 escape_ntriples_string(date),
-                xsd_dt
+                XSD,
+                xsd_date_type(date)
             )?;
         }
 
@@ -118,6 +119,47 @@ mod tests {
         for line in s.lines() {
             assert!(line.ends_with(" ."), "Line: {:?}", line);
         }
+    }
+
+    #[test]
+    fn test_date_datatype_follows_lexical_form() {
+        let ser = NTriplesSerializer::new();
+        let mut rec = sample_record();
+        rec.release_date = Some("2001-01-09T00:00:00Z".to_string());
+        rec.submission_date = Some("2003-02-23".to_string());
+        let s = ser.record_to_string(&rec);
+        let subj = "<http://identifiers.org/bioproject/PRJNA3>";
+        let xsd = "http://www.w3.org/2001/XMLSchema#";
+        assert!(
+            s.contains(&format!(
+                "{} <http://purl.org/dc/terms/issued> \"2001-01-09T00:00:00Z\"^^<{}dateTime> .\n",
+                subj, xsd
+            )),
+            "{}",
+            s
+        );
+        assert!(
+            s.contains(&format!(
+                "{} <http://purl.org/dc/terms/created> \"2003-02-23\"^^<{}date> .\n",
+                subj, xsd
+            )),
+            "date-only dct:created must be xsd:date:\n{}",
+            s
+        );
+
+        rec.release_date = Some("2001-01-09".to_string());
+        rec.submission_date = Some("2003-02-23T10:20:30Z".to_string());
+        let s = ser.record_to_string(&rec);
+        assert!(
+            s.contains(&format!("\"2001-01-09\"^^<{}date> .\n", xsd)),
+            "{}",
+            s
+        );
+        assert!(
+            s.contains(&format!("\"2003-02-23T10:20:30Z\"^^<{}dateTime> .\n", xsd)),
+            "{}",
+            s
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use super::Serializer;
+use super::{xsd_date_type, Serializer};
 use crate::model::BioProjectRecord;
 use insdc_rdf_core::escape::escape_turtle_string;
 use insdc_rdf_core::prefix::*;
@@ -43,14 +43,16 @@ impl Serializer for TurtleSerializer {
 
         if let Some(ref date) = record.release_date {
             po_lines.push(format!(
-                "dct:issued \"{}\"^^xsd:dateTime",
-                escape_turtle_string(date)
+                "dct:issued \"{}\"^^xsd:{}",
+                escape_turtle_string(date),
+                xsd_date_type(date)
             ));
         }
         if let Some(ref date) = record.submission_date {
             po_lines.push(format!(
-                "dct:created \"{}\"^^xsd:dateTime",
-                escape_turtle_string(date)
+                "dct:created \"{}\"^^xsd:{}",
+                escape_turtle_string(date),
+                xsd_date_type(date)
             ));
         }
 
@@ -112,7 +114,30 @@ mod tests {
         assert!(s.contains("dct:description \"Causes Lyme disease\""));
         assert!(s.contains("rdfs:label \"Borreliella burgdorferi B31\""));
         assert!(s.contains("dct:issued \"2001-01-09T00:00:00Z\"^^xsd:dateTime"));
-        assert!(s.contains("dct:created \"2003-02-23\"^^xsd:dateTime"));
+        assert!(
+            s.contains("dct:created \"2003-02-23\"^^xsd:date ."),
+            "{}",
+            s
+        );
+    }
+
+    #[test]
+    fn test_date_datatype_follows_lexical_form() {
+        let ser = TurtleSerializer::new();
+        let mut rec = sample_record();
+        rec.release_date = Some("2001-01-09".to_string());
+        rec.submission_date = Some("2003-02-23T10:20:30Z".to_string());
+        let s = ser.record_to_string(&rec);
+        assert!(
+            s.contains("dct:issued \"2001-01-09\"^^xsd:date ;"),
+            "date-only dct:issued must be xsd:date:\n{}",
+            s
+        );
+        assert!(
+            s.contains("dct:created \"2003-02-23T10:20:30Z\"^^xsd:dateTime ."),
+            "dateTime dct:created must stay xsd:dateTime:\n{}",
+            s
+        );
     }
 
     #[test]

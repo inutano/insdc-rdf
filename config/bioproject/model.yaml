@@ -7,6 +7,6 @@
   - rdfs:label?:
     - label: "Borreliella burgdorferi B31"
   - dct:issued?:
-    - release_date: 2001-01-09T00:00:00Z
+    - release_date: '"2001-01-09T00:00:00Z"^^xsd:dateTime'
   - dct:created?:
     - submission_date: 2003-02-23
