@@ -1,0 +1,55 @@
+{
+  "release_id": "2026-10_insdc-rdf",
+  "bucket": "biosampleplus",
+  "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
+  "name": "INSDC BioProject, BioSample and SRA metadata as RDF",
+  "description": "RDF conversion of the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 (SRA experiment metadata of 2026-09-13), produced with insdc-rdf: 60,144,760 BioSample, 1,124,118 BioProject, 143,187,558 SRA accession and 41,593,302 SRA experiment records as 5,709,467,473 triples, in N-Triples, Turtle and JSON-LD. The bsllmner-mk2 annotation RDF attaches to the BioSample IRIs of this release.",
+  "date_published": "2026-10-08",
+  "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
+  "authors": [
+    {"id": "#tazro-ohta", "name": "Tazro Ohta", "affiliation": ["#dbcls", "#chiba-ai-med", "#chiba-iaar"]},
+    {"id": "#hirotaka-suetake", "name": "Hirotaka Suetake", "affiliation": ["#sator"]}
+  ],
+  "organizations": [
+    {"id": "#dbcls", "name": "Database Division for Life Science (DBCLS), BioData Science Initiative, National Institute of Genetics, Research Organization of Information and Systems"},
+    {"id": "#chiba-ai-med", "name": "Department of Artificial Intelligence Medicine, Graduate School of Medicine, Chiba University"},
+    {"id": "#chiba-iaar", "name": "Institute for Advanced Academic Research, Chiba University"},
+    {"id": "#sator", "name": "Sator Inc."}
+  ],
+  "software": {
+    "name": "insdc-rdf",
+    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
+    "version": "v0.3.0",
+    "commit": "c3ba3b06db21690760316ca9148299e9fe317c6c",
+    "repository": "https://github.com/inutano/insdc-rdf"
+  },
+  "inputs": [
+    {"id": "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml", "type": "File", "name": "bioproject.xml", "content_size": 4135547517, "date_modified": "2026-10-07T16:28:28Z", "md5": "9a946342a8f6266eebadca80e9577069"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", "type": "File", "name": "biosample_set.xml.gz", "content_size": 4932583454, "date_modified": "2026-10-07T16:18:15Z", "md5": "fe05127ff2390c2ee357a73371d31fc7"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab", "type": "File", "name": "SRA_Accessions.tab", "content_size": 35180332411, "date_modified": "2026-10-07T21:06:16Z", "md5": "56e13836b3e088dd6dc0b9f27661ff4a"},
+    {"id": "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz", "type": "File", "name": "NCBI_SRA_Metadata_Full_20260913.tar.gz", "content_size": 18233005318, "date_modified": "2026-09-14T18:35:45Z", "md5": "e127c60e8aa90f589f2e2fcaeda075a8"}
+  ],
+  "sources": [
+    {"name": "bioproject", "title": "BioProject", "dir": "bioproject", "schema_dir": "config/bioproject", "inputs": ["https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml"], "expected_triples": 5772603},
+    {"name": "biosample", "title": "BioSample", "dir": "biosample", "schema_dir": "config/biosample", "inputs": ["https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz"], "expected_triples": 4031734256},
+    {"name": "sra", "title": "SRA accessions", "dir": "sra", "schema_dir": "config/sra", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab"], "expected_triples": 1014701708},
+    {"name": "sra-experiment", "title": "SRA experiments", "dir": "sra-experiment", "schema_dir": "config/sra-experiment", "inputs": ["https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"], "expected_triples": 657258906}
+  ],
+  "tarball": false,
+  "derived_from": [
+    "https://ftp.ncbi.nlm.nih.gov/bioproject/bioproject.xml",
+    "https://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz",
+    "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab",
+    "https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/NCBI_SRA_Metadata_Full_20260913.tar.gz"
+  ],
+  "readme": {
+    "intro": [
+      "This release is the RDF form of the NCBI BioProject, BioSample and SRA metadata dumps, converted with [insdc-rdf](https://github.com/inutano/insdc-rdf). The BioSample model follows the curated schema at <https://github.com/inutano/biosample_jsonld>.",
+      "The bsllmner-mk2 annotation RDF, release `2026-06_mistral-small3.1-24b-v2_rdf` in this bucket, attaches ontology-mapped annotations to the BioSample IRIs of this release. Load both into one graph to query them together."
+    ],
+    "notes": [
+      "`dra_ont:Experiment` subjects come from both `sra` (accession list) and `sra-experiment` (experiment XML); load both for the full set.",
+      "Every triple is in the default graph. The chunks of one source can be loaded in any order."
+    ]
+  }
+}

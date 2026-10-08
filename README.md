@@ -443,6 +443,22 @@ insdc-rdf/
   tests/fixtures/   Test data
 ```
 
+## Published releases
+
+Releases are published in the public `biosampleplus` S3 bucket (catalog: https://biosampleplus.s3.ap-northeast-1.amazonaws.com/index.html).
+
+- `2026-10_insdc-rdf`: the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 as RDF (N-Triples, Turtle, JSON-LD).
+- `2026-06_mistral-small3.1-24b-v2_rdf`: the bsllmner-mk2 ontology-mapped annotations of BioSample Plus release `2026-06_mistral-small3.1-24b-v2` as RDF, attached to the BioSample IRIs of the release above.
+
+To produce a release from converter output, then upload it:
+
+```bash
+python3 scripts/package_rdf_release.py releases/<id>.json <out-dir> --data-root <converter output root>
+bash scripts/upload_rdf_release.sh <out-dir> <id>
+```
+
+Releases are immutable. A new NCBI dump becomes a new `releases/YYYY-MM_insdc-rdf.json` and a new release, not an overwrite of an existing one.
+
 ## Roadmap
 
 ### Deployment

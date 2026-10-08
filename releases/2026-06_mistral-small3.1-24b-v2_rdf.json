@@ -1,0 +1,47 @@
+{
+  "release_id": "2026-06_mistral-small3.1-24b-v2_rdf",
+  "bucket": "biosampleplus",
+  "base_url": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com",
+  "name": "Ontology-mapped named entities from ChIP-Atlas and RNA-Seq BioSample records, as RDF",
+  "description": "RDF conversion of BioSample Plus release 2026-06_mistral-small3.1-24b-v2, produced with insdc-rdf: 6,746,471 ontology-mapped annotations from 4,189,039 result entries, using 38,737 distinct terms, as schema:PropertyValue nodes on BioSample IRIs, with the 311 bsllmner-mk2 runs as prov:Activity provenance. 47,307,387 triples in N-Triples, Turtle and JSON-LD.",
+  "date_published": "2026-10-08",
+  "license": {"id": "https://creativecommons.org/licenses/by/4.0/", "name": "Creative Commons Attribution 4.0 International"},
+  "authors": [
+    {"id": "#shuya-ikeda", "name": "Shuya Ikeda", "affiliation": ["#dbcls"]},
+    {"id": "#hirotaka-suetake", "name": "Hirotaka Suetake", "affiliation": ["#sator"]},
+    {"id": "#tazro-ohta", "name": "Tazro Ohta", "affiliation": ["#dbcls", "#chiba-ai-med", "#chiba-iaar"]}
+  ],
+  "organizations": [
+    {"id": "#dbcls", "name": "Database Division for Life Science (DBCLS), BioData Science Initiative, National Institute of Genetics, Research Organization of Information and Systems"},
+    {"id": "#sator", "name": "Sator Inc."},
+    {"id": "#chiba-ai-med", "name": "Department of Artificial Intelligence Medicine, Graduate School of Medicine, Chiba University"},
+    {"id": "#chiba-iaar", "name": "Institute for Advanced Academic Research, Chiba University"}
+  ],
+  "software": {
+    "name": "insdc-rdf",
+    "description": "Converts INSDC metadata dumps (BioSample, BioProject, SRA) and bsllmner-mk2 releases to RDF.",
+    "version": "v0.3.0-14-g6ea33dc",
+    "commit": "6ea33dc1df3cc198b4f33fec1719999ee224768d",
+    "repository": "https://github.com/inutano/insdc-rdf"
+  },
+  "inputs": [
+    {"id": "https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/", "type": "Dataset", "name": "BioSample Plus release 2026-06_mistral-small3.1-24b-v2"}
+  ],
+  "sources": [
+    {"name": "bsllmner", "title": "bsllmner-mk2 annotations", "dir": "bsllmner", "schema_dir": "config/bsllmner", "inputs": ["https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/"], "expected_triples": 47307387}
+  ],
+  "tarball": true,
+  "derived_from": ["2026-06_mistral-small3.1-24b-v2"],
+  "readme": {
+    "intro": [
+      "This release is the RDF form of BioSample Plus release [`2026-06_mistral-small3.1-24b-v2`](https://biosampleplus.s3.ap-northeast-1.amazonaws.com/releases/2026-06_mistral-small3.1-24b-v2/), converted with [insdc-rdf](https://github.com/inutano/insdc-rdf). Each ontology term bsllmner-mk2 assigned to a BioSample field becomes a `schema:PropertyValue` attached to the BioSample with `schema:additionalProperty`, and each bsllmner-mk2 run becomes a `prov:Activity`.",
+      "The BioSample IRIs are those of the INSDC RDF release `2026-10_insdc-rdf` in this bucket. Load both into one graph to query annotations together with the original BioSample attributes."
+    ],
+    "notes": [
+      "Annotation nodes carry `schema:propertyID` (the field, for example `cell_line`) and no `schema:name`, so queries on the submitters' attributes (`schema:name`) are unaffected by the annotations.",
+      "Term IRIs are written exactly as bsllmner-mk2 produced them, without normalization. The terms carry only `rdf:type schema:DefinedTerm` and `rdfs:label`.",
+      "The ontology files the terms come from are not part of this release. Load the OWL files under `ontology/` of the source crate alongside it to query term hierarchies.",
+      "Cite the bsllmner-mk2 publication, <https://doi.org/10.1101/2025.02.17.638570>, and this release ID."
+    ]
+  }
+}
