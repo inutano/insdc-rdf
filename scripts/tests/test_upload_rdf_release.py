@@ -57,6 +57,13 @@ def put(src, url):
         return
     dst = root / bucket / key
     dst.parent.mkdir(parents=True, exist_ok=True)
+    size = Path(src).stat().st_size
+    if size > 1 << 30:
+        # A sparse stand-in for a large release: keep the size without reading it.
+        with open(dst, "wb") as f:
+            f.truncate(size)
+        print("upload: %s to %s" % (src, url))
+        return
     data = Path(src).read_bytes()
     if os.environ.get("STUB_TRUNCATE") and key.endswith(".tar.gz"):
         data = data[:-1]
@@ -239,6 +246,17 @@ def test_upload(env):
     _check_content_types(env)
     assert "ok: %d files" % len(FILES) in r.stdout
     assert "tarball: %d bytes" % len(TARBALL) in r.stdout
+
+
+def test_release_over_2_gib(env):
+    # mawk prints a sum above 2^31 as 5.52953e+10, which never equals the remote total.
+    big = env["out"] / RID / "alpha" / "nt" / "chunk_0001.nt.gz"
+    with open(str(big), "wb") as f:
+        f.truncate(3 << 30)
+    r = _run(env)
+    assert r.returncode == 0, r.stdout + r.stderr
+    total = sum(len(d) for d in FILES.values()) + (3 << 30)
+    assert "ok: %d files, %d bytes" % (len(FILES) + 1, total) in r.stdout
 
 
 def test_dryrun_writes_nothing(env):

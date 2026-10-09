@@ -145,7 +145,8 @@ if [[ ${#DRYRUN[@]} -gt 0 ]]; then
 fi
 
 local_count=$(find "$DIR" -type f | wc -l)
-local_bytes=$(find "$DIR" -type f -printf '%s\n' | awk '{s+=$1} END {print s+0}')
+# printf: mawk's print writes sums above 2^31 in exponent form (5.52953e+10).
+local_bytes=$(find "$DIR" -type f -printf '%s\n' | awk '{s+=$1} END {printf "%.0f\n", s}')
 summary=$(aws s3 ls --recursive --summarize "s3://$BUCKET/releases/$ID/")
 remote_count=$(printf '%s\n' "$summary" | awk '/Total Objects:/ {print $3}')
 remote_bytes=$(printf '%s\n' "$summary" | awk '/Total Size:/ {print $3}')
