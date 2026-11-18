@@ -12,20 +12,20 @@ Convert [INSDC](https://www.insdc.org/) sequence archive metadata to RDF. Stream
 
 insdc-rdf is a Rust CLI tool that converts the complete NCBI/INSDC metadata ecosystem into linked RDF. It replaces the legacy [biosampleplus-pipeline](https://github.com/inutano/biosampleplus-pipeline) (Ruby/AWK) with a modern, streaming architecture that processes 250 million records across five sources in about two hours.
 
-| | Records | Triples | Conversion time |
+| | Records | Triples | Conversion time (2026-10) |
 |---|---|---|---|
-| BioSample | 60.1M | ~4.0B | 71 min |
-| SRA | 143.2M | ~1.0B | 29 min |
-| BioProject | 1.12M | ~5.8M | 23 sec |
-| SRA Experiment | 41.6M | ~0.66B | 18 min |
-| bsllmner-mk2 | 4.19M | ~47M | 2 min |
-| **Total** | **250.2M** | **~5.8B** | **~121 min** |
+| BioSample | 61.3M | ~4.1B | 71 min |
+| SRA | 145.8M | ~1.0B | 29 min |
+| BioProject | 1.14M | ~5.8M | 23 sec |
+| SRA Experiment | 42.5M | ~0.67B | 18 min |
+| bsllmner-mk2 | 4.19M | ~46M | 2 min |
+| **Total** | **255.1M** | **~5.88B** | **~121 min** |
 
-NCBI dumps of 2026-10-07 (SRA Experiment: 2026-09-13); bsllmner release 2026-06_mistral-small3.1-24b-v2.
+NCBI dumps of 2026-11-13 (SRA Experiment: NCBI_SRA_Metadata_Full_20261112); bsllmner release 2026-10_qwen3.8-27b. Conversion times are from the 2026-10 run, when the sources were converted one at a time.
 
-The Triples column counts N-Triples lines. 88,250,905 lines of the 2026-10 INSDC output repeat a triple. 83,186,604 of them come from `sra` and `sra-experiment`, which both write the `rdf:type` and `dct:identifier` of each of the 41,593,302 experiments. The remaining 5,064,301 are statements that the source data repeat, such as an attribute a BioSample lists twice, whose `rdf:type`, `schema:name` and `schema:additionalProperty` triples then recur. A triplestore keeps one copy, so the INSDC output holds 5,621,216,568 distinct triples.
+The Triples column counts N-Triples lines. 90,167,812 lines of the 2026-11 INSDC output repeat a triple. 85,083,122 of them come from `sra` and `sra-experiment`, which both write the `rdf:type` and `dct:identifier` of each of the 42,541,561 experiments. The remaining 5,084,690 are statements that the source data repeat, such as an attribute a BioSample lists twice, whose `rdf:type`, `schema:name` and `schema:additionalProperty` triples then recur. A triplestore keeps one copy, so the INSDC output holds 5,742,848,281 distinct triples.
 
-The 2026-10 output was validated by loading it, together with the bsllmner annotations and the ontology files they use, into [QLever](https://github.com/ad-freiburg/qlever). The load gave 5,760,937,728 N-Triples lines and 5,672,544,678 distinct triples. Record counts match the conversion manifests and the source files, and spot checks return the expected data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
+The 2026-11 output was validated by loading it, together with the bsllmner annotations and the ontology files they use, into [QLever](https://github.com/ad-freiburg/qlever). The load gave 5,883,382,783 N-Triples lines and 5,793,079,279 distinct triples. Record counts match the conversion manifests and the source files, and spot checks return the expected data. Schema definitions follow the [rdf-config](https://github.com/dbcls/rdf-config) convention with generated ShEx validation shapes.
 
 ## Install
 
@@ -253,13 +253,13 @@ Licenses: CC BY 4.0, except Uberon (CC BY 3.0), NCBI Gene (public domain), and t
 
 ### License and citation (bsllmner data)
 
-The bsllmner-mk2 release is licensed CC-BY-4.0. Please cite <https://doi.org/10.1101/2025.02.17.638570> and the release id (`2026-06_mistral-small3.1-24b-v2`).
+The bsllmner-mk2 release is licensed CC-BY-4.0. Please cite <https://doi.org/10.1101/2025.02.17.638570> and the release id (for example `2026-10_qwen3.8-27b`).
 
 ### Known limitations (bsllmner)
 
 - Cellosaurus (`http://purl.obolibrary.org/obo/Cellosaurus#CVCL_…`) and NCBI Gene (`http://purl.obolibrary.org/obo/NCBIGene_…`) term IRIs are bsllmner's own and do not resolve (both return 404). They match the crate's ontology files but no other dataset.
 - No hierarchy queries over the annotations, since the shipped ontologies have none.
-- Annotations reflect the BioSample snapshot that bsllmner read (May–June 2026), not the 2026-10 dump.
+- Annotations reflect the BioSample snapshot that bsllmner read, not the NCBI dump of the INSDC release: 261 of the 3,788,559 BioSamples annotated in `2026-10_qwen3.8-27b` are absent from `2026-11_insdc-rdf`.
 
 ## rdf-config & ShEx
 
@@ -466,8 +466,10 @@ insdc-rdf/
 
 Releases are published in the public `biosampleplus` S3 bucket (catalog: https://biosampleplus.s3.ap-northeast-1.amazonaws.com/index.html).
 
-- `2026-10_insdc-rdf`: the NCBI BioProject, BioSample and SRA metadata dumps of 2026-10-07 as RDF (N-Triples, Turtle, JSON-LD).
-- `2026-06_mistral-small3.1-24b-v2_rdf`: the bsllmner-mk2 ontology-mapped annotations of BioSample Plus release `2026-06_mistral-small3.1-24b-v2` as RDF, attached to the BioSample IRIs of the release above.
+- `2026-11_insdc-rdf`: the NCBI BioProject, BioSample and SRA metadata dumps of 2026-11-13 as RDF (N-Triples, Turtle, JSON-LD).
+- `2026-10_qwen3.8-27b_rdf`: the bsllmner-mk2 ontology-mapped annotations of BioSample Plus release `2026-10_qwen3.8-27b` as RDF, attached to the BioSample IRIs of `2026-11_insdc-rdf`.
+- `2026-10_insdc-rdf`: the NCBI dumps of 2026-10-07 as RDF.
+- `2026-06_mistral-small3.1-24b-v2_rdf`: the annotations of BioSample Plus release `2026-06_mistral-small3.1-24b-v2` as RDF, attached to the BioSample IRIs of `2026-10_insdc-rdf`.
 
 To produce a release from converter output, then upload it:
 
