@@ -10,14 +10,18 @@
 #   --list-inputs  print the files the build would read, in order, and exit
 # Env: QLEVER_NAME (default insdc-rdf), QLEVER_CONTAINER (default qlever-insdc-<port>),
 #      QLEVER_IMAGE (default docker.io/adfreiburg/qlever),
-#      TRIPLES_EXPECTED (optional: fail unless the index log's last "Triples parsed" equals it)
+#      TRIPLES_EXPECTED (optional: fail unless the index log's last "Triples parsed" equals it),
+#      QLEVER_NOFILE (default 524288: open-file limit inside the containers)
 #
 # The build fails if any input file cannot be read in full, so a truncated input never
 # yields an index silently. Server flags (see the endpoint notes): --entrypoint bash with
 # -u uid:gid, and -s is the query timeout (-t would enable the text index).
+# Both containers get a raised open-file limit (QLEVER_NOFILE, default 524288): merging the
+# partial vocabularies opens all of them at once (about 5,900 for the full INSDC graph), and
+# Docker 29 / containerd 2 give containers a soft limit of 1024.
 set -euo pipefail
 
-usage() { sed -n '2,17p' "$0"; exit 1; }
+usage() { sed -n '2,21p' "$0"; exit 1; }
 
 # Print the input files of one directory (*.nt and *.nt.gz, regular files only) in byte order.
 list_inputs() {
@@ -52,6 +56,7 @@ main() {
   NAME=${QLEVER_NAME:-insdc-rdf}
   CONTAINER=${QLEVER_CONTAINER:-qlever-insdc-$PORT}
   IMAGE=${QLEVER_IMAGE:-docker.io/adfreiburg/qlever}
+  local NOFILE=${QLEVER_NOFILE:-524288}
 
   mkdir -p "$INDEX_DIR"
   if compgen -G "$INDEX_DIR/$NAME.index.*" > /dev/null; then
@@ -77,12 +82,13 @@ main() {
   quoted=$(printf ' %q' "${files[@]}")
   rm -f "$marker"
   echo "$(date -u +%FT%TZ) index build start: $INDEX_DIR <- $* (${#files[@]} files)"
-  docker run --rm -u "$(id -u):$(id -g)" -v "$INDEX_DIR:/index" "${mounts[@]}" \
-    -w /index --init --entrypoint bash "$IMAGE" -c \
+  docker run --rm -u "$(id -u):$(id -g)" --ulimit "nofile=$NOFILE:$NOFILE" \
+    -v "$INDEX_DIR:/index" "${mounts[@]}" -w /index --init --entrypoint bash "$IMAGE" -c \
     "qlever-index -i $NAME -s $NAME.settings.json --vocabulary-type on-disk-compressed \
        -f <(zcat -f --$quoted || : > /index/.input-failed) \
        -g - -F nt -p false --stxxl-memory 10G > $NAME.index-log.txt 2>&1; \
-     rc=\$?; wait \$! 2>/dev/null || true; exit \$rc"
+     rc=\$?; wait \$! 2>/dev/null || true; exit \$rc" \
+    || { echo "index build FAILED: qlever-index exited with an error (see $INDEX_DIR/$NAME.index-log.txt)" >&2; exit 1; }
   echo "$(date -u +%FT%TZ) index build done"
 
   if [ -e "$marker" ]; then
@@ -101,7 +107,7 @@ main() {
 
   docker rm -f "$CONTAINER" 2>/dev/null || true
   docker run -d --name "$CONTAINER" --restart unless-stopped -u "$(id -u):$(id -g)" \
-    -p "$PORT:$PORT" -v "$INDEX_DIR:/index" -w /index --entrypoint bash "$IMAGE" -c \
+    --ulimit "nofile=$NOFILE:$NOFILE" -p "$PORT:$PORT" -v "$INDEX_DIR:/index" -w /index --entrypoint bash "$IMAGE" -c \
     "qlever-server -i $NAME -p $PORT -m 20G -s 300s > $NAME.server-log.txt 2>&1"
   echo "QLever server $CONTAINER started on port $PORT"
 }
